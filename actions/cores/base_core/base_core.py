@@ -181,5 +181,15 @@ class BaseCore(ActionCore):
         """Get the domains available in Home Assistant."""
         raise NotImplementedError("Must be implemented by subclasses.")
 
+    def _get_canvas_size(self) -> tuple:
+        """
+        Get the current canvas size for this input.
+        :return: (width, height) of the canvas, or (1, 1) if unavailable.
+        """
+        try:
+            return self.get_input().get_image_size()
+        except Exception:
+            return (1, 1)
+
     def get_generative_ui(self):
         return []

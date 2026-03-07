@@ -18,3 +18,6 @@ class ActionCore:
 
     def add_event_assigner(self, event_assigner):
         pass
+
+    def get_input(self):
+        raise AttributeError("get_input not available in mock")

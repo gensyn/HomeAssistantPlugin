@@ -242,6 +242,7 @@ class ShowText(CustomizationCore):
             if not self.plugin_base.backend.is_connected():
                 text, position, text_size, text_color, outline_size, outline_color = text_helper.get_text(
                     state, self.settings, False)
+                text_size, outline_size = self._get_sizes_adjusted_for_canvas(text_size, outline_size)
                 self.set_label(
                     text, position, text_color, None, text_size, outline_size, outline_color,
                     None, None, True)
@@ -264,6 +265,7 @@ class ShowText(CustomizationCore):
         text, position, text_size, text_color, outline_size, outline_color = text_helper.get_text(
             state, self.settings, self.plugin_base.backend.is_connected()
         )
+        text_size, outline_size = self._get_sizes_adjusted_for_canvas(text_size, outline_size)
         self.set_label(
             text, position, text_color, None, text_size, outline_size, outline_color,
             None, None, True
@@ -271,6 +273,20 @@ class ShowText(CustomizationCore):
 
         self._load_customizations()
         self._set_enabled_disabled()
+
+    def _get_sizes_adjusted_for_canvas(self, text_size: int, outline_size: int) -> tuple:
+        """
+        Scale text and outline sizes to compensate for larger canvases (e.g., SD+ dial touchscreen).
+
+        Font sizes are absolute pixel values, so the same size appears proportionally smaller on a
+        taller canvas than on a standard square key. Scaling by the canvas-height to key-height
+        ratio preserves the visual proportion the user configured.
+        """
+        canvas_w, canvas_h = self._get_canvas_size()
+        if canvas_h > text_const.KEY_REFERENCE_SIZE:
+            scale_factor = canvas_h / text_const.KEY_REFERENCE_SIZE
+            return round(text_size * scale_factor), round(outline_size * scale_factor)
+        return text_size, outline_size
 
     def _get_domains(self) -> List[str]:
         """This class needs all domains that provide actions in Home Assistant."""

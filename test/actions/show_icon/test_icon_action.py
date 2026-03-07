@@ -274,3 +274,72 @@ class TestShowIcon(unittest.TestCase):
 
         instance.plugin_base.backend.get_domains_for_entities.assert_called_once()
         self.assertEqual(result, ["domain1", "domain2"])
+
+    def test_get_scale_adjusted_for_canvas_landscape(self):
+        """Scale is multiplied by canvas aspect ratio for landscape canvases."""
+        instance = ShowIcon.__new__(ShowIcon)
+        instance.get_input = Mock(return_value=Mock(get_image_size=Mock(return_value=(200, 100))))
+
+        result = instance._get_scale_adjusted_for_canvas(0.8)
+
+        self.assertAlmostEqual(1.6, result)
+
+    def test_get_scale_adjusted_for_canvas_square(self):
+        """Scale is not changed for square canvases."""
+        instance = ShowIcon.__new__(ShowIcon)
+        instance.get_input = Mock(return_value=Mock(get_image_size=Mock(return_value=(72, 72))))
+
+        result = instance._get_scale_adjusted_for_canvas(0.8)
+
+        self.assertAlmostEqual(0.8, result)
+
+    def test_get_scale_adjusted_for_canvas_get_input_unavailable(self):
+        """Scale is not changed when canvas size cannot be determined."""
+        instance = ShowIcon.__new__(ShowIcon)
+        instance.get_input = Mock(side_effect=AttributeError("not available"))
+
+        result = instance._get_scale_adjusted_for_canvas(0.8)
+
+        self.assertAlmostEqual(0.8, result)
+
+    @patch('HomeAssistantPlugin.actions.show_icon.icon_action.icon_helper')
+    def test_refresh_landscape_canvas_adjusts_scale(self, icon_helper_mock):
+        """On a landscape canvas the icon scale is multiplied by the aspect ratio."""
+        state = {"state_key": "state_value"}
+
+        instance = ShowIcon.__new__(ShowIcon)
+        instance.initialized = True
+        instance.plugin_base = Mock()
+        instance.plugin_base.backend.is_connected.return_value = True
+        instance.settings = Mock()
+        instance.settings.get_entity.return_value = "entity_id"
+        instance.set_media = Mock()
+        instance._load_customizations = Mock()
+        instance._set_enabled_disabled = Mock()
+        instance.get_input = Mock(return_value=Mock(get_image_size=Mock(return_value=(200, 100))))
+        icon_helper_mock.get_icon.return_value = ("icon_path", 0.8)
+
+        instance.refresh(state)
+
+        instance.set_media.assert_called_once_with(media_path="icon_path", size=1.6)
+
+    @patch('HomeAssistantPlugin.actions.show_icon.icon_action.icon_helper')
+    def test_refresh_square_canvas_does_not_adjust_scale(self, icon_helper_mock):
+        """On a square canvas the icon scale is not adjusted."""
+        state = {"state_key": "state_value"}
+
+        instance = ShowIcon.__new__(ShowIcon)
+        instance.initialized = True
+        instance.plugin_base = Mock()
+        instance.plugin_base.backend.is_connected.return_value = True
+        instance.settings = Mock()
+        instance.settings.get_entity.return_value = "entity_id"
+        instance.set_media = Mock()
+        instance._load_customizations = Mock()
+        instance._set_enabled_disabled = Mock()
+        instance.get_input = Mock(return_value=Mock(get_image_size=Mock(return_value=(72, 72))))
+        icon_helper_mock.get_icon.return_value = ("icon_path", 0.8)
+
+        instance.refresh(state)
+
+        instance.set_media.assert_called_once_with(media_path="icon_path", size=0.8)

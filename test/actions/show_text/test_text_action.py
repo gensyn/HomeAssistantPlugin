@@ -549,3 +549,93 @@ class TestShowText(unittest.TestCase):
             None,
             trigger_callback=False
         )
+
+    def test_get_sizes_adjusted_for_canvas_larger_canvas(self):
+        """Text and outline sizes are scaled up for canvases taller than the key reference."""
+        instance = ShowText.__new__(ShowText)
+        instance.get_input = Mock(return_value=Mock(get_image_size=Mock(return_value=(200, 100))))
+
+        text_size, outline_size = instance._get_sizes_adjusted_for_canvas(20, 2)
+
+        # 100 / 72 ≈ 1.39 → round(20 * 1.39) = 28, round(2 * 1.39) = 3
+        self.assertEqual(round(20 * 100 / text_const.KEY_REFERENCE_SIZE), text_size)
+        self.assertEqual(round(2 * 100 / text_const.KEY_REFERENCE_SIZE), outline_size)
+
+    def test_get_sizes_adjusted_for_canvas_standard_key(self):
+        """Text and outline sizes are unchanged for standard-size key canvases."""
+        instance = ShowText.__new__(ShowText)
+        instance.get_input = Mock(return_value=Mock(get_image_size=Mock(return_value=(72, 72))))
+
+        text_size, outline_size = instance._get_sizes_adjusted_for_canvas(20, 2)
+
+        self.assertEqual(20, text_size)
+        self.assertEqual(2, outline_size)
+
+    def test_get_sizes_adjusted_for_canvas_get_input_unavailable(self):
+        """Text and outline sizes are unchanged when canvas size cannot be determined."""
+        instance = ShowText.__new__(ShowText)
+        instance.get_input = Mock(side_effect=AttributeError("not available"))
+
+        text_size, outline_size = instance._get_sizes_adjusted_for_canvas(20, 2)
+
+        self.assertEqual(20, text_size)
+        self.assertEqual(2, outline_size)
+
+    @patch('HomeAssistantPlugin.actions.show_text.text_action.text_helper')
+    def test_refresh_landscape_canvas_adjusts_text_size(self, text_helper_mock):
+        """On a landscape canvas the text size and outline are scaled proportionally."""
+        instance = ShowText.__new__(ShowText)
+        instance.initialized = True
+        instance.set_top_label = Mock()
+        instance.set_center_label = Mock()
+        instance.set_bottom_label = Mock()
+        instance.set_label = Mock()
+        instance.settings = Mock()
+        instance.settings.get_entity.return_value = "entity"
+        instance.plugin_base = Mock()
+        instance.plugin_base.backend.is_connected.return_value = True
+        instance.plugin_base.backend.get_entity.return_value = {"state": "state"}
+        instance._load_attributes = Mock()
+        instance._load_customizations = Mock()
+        instance._set_enabled_disabled = Mock()
+        instance.get_input = Mock(return_value=Mock(get_image_size=Mock(return_value=(200, 100))))
+        # text_helper returns (text, position, text_size=20, color, outline_size=2, outline_color)
+        text_helper_mock.get_text.return_value = ("hello", "center", 20, [255, 255, 255, 255], 2, [0, 0, 0, 255])
+
+        instance.refresh()
+
+        expected_text_size = round(20 * 100 / text_const.KEY_REFERENCE_SIZE)
+        expected_outline_size = round(2 * 100 / text_const.KEY_REFERENCE_SIZE)
+        instance.set_label.assert_called_once_with(
+            "hello", "center", [255, 255, 255, 255], None,
+            expected_text_size, expected_outline_size, [0, 0, 0, 255],
+            None, None, True
+        )
+
+    @patch('HomeAssistantPlugin.actions.show_text.text_action.text_helper')
+    def test_refresh_square_canvas_does_not_adjust_text_size(self, text_helper_mock):
+        """On a square key canvas the text size is not adjusted."""
+        instance = ShowText.__new__(ShowText)
+        instance.initialized = True
+        instance.set_top_label = Mock()
+        instance.set_center_label = Mock()
+        instance.set_bottom_label = Mock()
+        instance.set_label = Mock()
+        instance.settings = Mock()
+        instance.settings.get_entity.return_value = "entity"
+        instance.plugin_base = Mock()
+        instance.plugin_base.backend.is_connected.return_value = True
+        instance.plugin_base.backend.get_entity.return_value = {"state": "state"}
+        instance._load_attributes = Mock()
+        instance._load_customizations = Mock()
+        instance._set_enabled_disabled = Mock()
+        instance.get_input = Mock(return_value=Mock(get_image_size=Mock(return_value=(72, 72))))
+        text_helper_mock.get_text.return_value = ("hello", "center", 20, [255, 255, 255, 255], 2, [0, 0, 0, 255])
+
+        instance.refresh()
+
+        instance.set_label.assert_called_once_with(
+            "hello", "center", [255, 255, 255, 255], None,
+            20, 2, [0, 0, 0, 255],
+            None, None, True
+        )

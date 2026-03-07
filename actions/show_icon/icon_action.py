@@ -101,6 +101,7 @@ class ShowIcon(CustomizationCore):
         if not self.initialized:
             if not self.plugin_base.backend.is_connected():
                 icon, scale = icon_helper.get_icon(state, self.settings, False)
+                scale = self._get_scale_adjusted_for_canvas(scale)
                 self.set_media(media_path=icon, size=scale)
             return
 
@@ -113,10 +114,24 @@ class ShowIcon(CustomizationCore):
             return
 
         icon, scale = icon_helper.get_icon(state, self.settings, self.plugin_base.backend.is_connected())
+        scale = self._get_scale_adjusted_for_canvas(scale)
         self.set_media(media_path=icon, size=scale)
 
         self._load_customizations()
         self._set_enabled_disabled()
+
+    def _get_scale_adjusted_for_canvas(self, scale: float) -> float:
+        """
+        Adjust the icon scale to compensate for landscape canvases (e.g., SD+ dial touchscreen).
+
+        On landscape canvases the icon is constrained by the canvas height, so it fills far less
+        of the canvas width than it does on square keys. Scaling by the canvas aspect ratio makes
+        the icon fill the same horizontal proportion as it would on a square key.
+        """
+        canvas_w, canvas_h = self._get_canvas_size()
+        if canvas_h > 0 and canvas_w > canvas_h:
+            return scale * canvas_w / canvas_h
+        return scale
 
     def _get_domains(self) -> List[str]:
         """This class needs all domains that provide actions in Home Assistant."""
