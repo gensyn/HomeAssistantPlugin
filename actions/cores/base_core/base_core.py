@@ -188,7 +188,7 @@ class BaseCore(ActionCore):
         """
         try:
             return self.get_input().get_image_size()
-        except Exception:
+        except (AttributeError, TypeError):
             return (1, 1)
 
     def get_generative_ui(self):

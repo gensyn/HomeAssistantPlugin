@@ -557,7 +557,7 @@ class TestShowText(unittest.TestCase):
 
         text_size, outline_size = instance._get_sizes_adjusted_for_canvas(20, 2)
 
-        # 100 / 72 ≈ 1.39 → round(20 * 1.39) = 28, round(2 * 1.39) = 3
+        # Both sizes are scaled by canvas_height / KEY_REFERENCE_SIZE
         self.assertEqual(round(20 * 100 / text_const.KEY_REFERENCE_SIZE), text_size)
         self.assertEqual(round(2 * 100 / text_const.KEY_REFERENCE_SIZE), outline_size)
 
