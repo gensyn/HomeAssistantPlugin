@@ -19,7 +19,7 @@ class CustomizationSettings(BaseSettings):
 
     def get_customizations(self):
         return [self.customization_implementation.from_dict(c) for c in
-                self._action.get_settings()[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS]]
+                self._action.get_settings()[self.customization_name].get(customization_const.SETTING_CUSTOMIZATIONS, [])]
 
     def move_customization(self, index: int, offset: int):
         """
