@@ -522,6 +522,32 @@ class TestShowText(unittest.TestCase):
         instance._load_customizations.assert_called_once()
         instance.set_enabled_disabled.assert_called_once()
 
+    @patch('HomeAssistantPlugin.actions.show_text.text_action.text_helper')
+    def test_refresh_skips_while_clearing(self, text_helper_mock):
+        instance = ShowText.__new__(ShowText)
+        instance._clearing = True
+        instance.initialized = True
+        instance.set_top_label = Mock()
+        instance.set_center_label = Mock()
+        instance.set_bottom_label = Mock()
+        instance.set_label = Mock()
+        instance.settings = Mock()
+        instance.plugin_base = Mock()
+        instance._load_attributes = Mock()
+        instance._load_customizations = Mock()
+        instance.set_enabled_disabled = Mock()
+
+        instance.refresh({"state": "state"})
+
+        instance.set_top_label.assert_not_called()
+        instance.set_center_label.assert_not_called()
+        instance.set_bottom_label.assert_not_called()
+        instance.set_label.assert_not_called()
+        text_helper_mock.get_text.assert_not_called()
+        instance._load_attributes.assert_not_called()
+        instance._load_customizations.assert_not_called()
+        instance.set_enabled_disabled.assert_not_called()
+
     def test_get_domains(self):
         instance = ShowText.__new__(ShowText)
         instance.plugin_base = Mock()

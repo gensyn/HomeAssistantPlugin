@@ -269,3 +269,22 @@ class TestLevelDialRefresh(unittest.TestCase):
         instance.refresh(state=state)
 
         instance.set_media.assert_not_called()
+
+    @patch.object(LevelDial, 'set_enabled_disabled')
+    @patch.object(LevelDial, '_load_customizations')
+    @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
+    def test_refresh_skips_while_clearing(self, _, _load_cust, _set_ed):
+        instance = LevelDial()
+        instance._clearing = True
+        instance.initialized = True
+        instance.settings = Mock()
+        instance.set_top_label = Mock()
+        instance.set_center_label = Mock()
+        instance.set_media = Mock()
+
+        instance.refresh(state={"state": "on", "attributes": {"friendly_name": "Desk Light", "brightness": 128}})
+
+        instance.settings.get_entity.assert_not_called()
+        instance.set_top_label.assert_not_called()
+        instance.set_center_label.assert_not_called()
+        instance.set_media.assert_not_called()

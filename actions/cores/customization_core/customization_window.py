@@ -43,12 +43,12 @@ class CustomizationWindow(Window):
     """
     callback: Callable
 
-    connect_rows: list = []
     default_margin = 3
 
     def __init__(self, lm, attributes: list, callback: Callable,
                  current: Customization = None, index: int = None):
         super().__init__()
+        self.connect_rows: list = []
         self.callback = callback
         self.lm = lm
         self.index: int = index

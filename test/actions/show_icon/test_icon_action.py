@@ -271,6 +271,24 @@ class TestShowIcon(unittest.TestCase):
         instance._load_customizations.assert_called_once()
         instance.set_enabled_disabled.assert_called_once()
 
+    @patch('HomeAssistantPlugin.actions.show_icon.icon_action.icon_helper')
+    def test_refresh_skips_while_clearing(self, icon_helper_mock):
+        instance = ShowIcon.__new__(ShowIcon)
+        instance._clearing = True
+        instance.initialized = True
+        instance.plugin_base = Mock()
+        instance.settings = Mock()
+        instance.set_media = Mock()
+        instance._load_customizations = Mock()
+        instance.set_enabled_disabled = Mock()
+
+        instance.refresh({"state_key": "state_value"})
+
+        icon_helper_mock.get_icon.assert_not_called()
+        instance.set_media.assert_not_called()
+        instance._load_customizations.assert_not_called()
+        instance.set_enabled_disabled.assert_not_called()
+
     def test_get_domains(self):
         instance = ShowIcon.__new__(ShowIcon)
         instance.plugin_base = Mock()

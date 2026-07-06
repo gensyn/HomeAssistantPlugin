@@ -370,7 +370,7 @@ class LevelDial(CustomizationCore):
         self.plugin_base.backend.perform_action(domain, service, entity, params)
 
     def refresh(self, state: dict = None) -> None:
-        if getattr(self, "_disposed", False):
+        if getattr(self, "_disposed", False) or getattr(self, "_clearing", False):
             return
         if not self.initialized:
             return
