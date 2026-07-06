@@ -18,13 +18,14 @@ class TestLevelDialOnRemove(unittest.TestCase):
     @patch('HomeAssistantPlugin.actions.level_dial.level_dial.CustomizationCore.__init__')
     def test_on_remove_cancels_batch_timer_and_clears_pending_state(self, _, super_on_remove_mock):
         instance = LevelDial()
-        instance._batch_timer = Mock()
+        timer_mock = Mock()
+        instance._batch_timer = timer_mock
         instance._pending_command = ("light", "turn_on", "light.desk", {"brightness": 154})
         instance._pending_pct = 60
 
         instance.on_remove()
 
-        instance._batch_timer.cancel.assert_called_once()
+        timer_mock.cancel.assert_called_once()
         self.assertIsNone(instance._batch_timer)
         self.assertIsNone(instance._pending_command)
         self.assertIsNone(instance._pending_pct)
