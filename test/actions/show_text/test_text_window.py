@@ -40,6 +40,7 @@ class TestTextWindow(unittest.TestCase):
 
         def super_init(instance, lm, *args, **kwargs):
             instance.lm = lm
+            instance.connect_rows = []
             instance.grid_fields = Mock()
             instance.attributes = attributes
 

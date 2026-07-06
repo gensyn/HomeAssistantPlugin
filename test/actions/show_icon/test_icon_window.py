@@ -37,6 +37,7 @@ class TestIconWindow(unittest.TestCase):
 
         def super_init(instance, lm, *args, **kwargs):
             instance.lm = lm
+            instance.connect_rows = []
             instance.grid_fields = Mock()
 
         customization_window_init_mock.side_effect = super_init
