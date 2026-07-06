@@ -124,6 +124,8 @@ class ShowIcon(CustomizationCore):
         """
         Executed when an entity is updated to reflect the changes on the key.
         """
+        if getattr(self, "_disposed", False):
+            return
         if not self.initialized:
             if not self.plugin_base.backend.is_connected():
                 icon, scale = icon_helper.get_icon(state, self.settings, False)

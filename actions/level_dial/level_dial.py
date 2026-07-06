@@ -211,6 +211,15 @@ class LevelDial(CustomizationCore):
         super().on_ready()
         self._reload()
 
+    def on_remove(self) -> None:
+        timer = getattr(self, "_batch_timer", None)
+        if timer is not None:
+            timer.cancel()
+        self._batch_timer = None
+        self._pending_command = None
+        self._pending_pct = None
+        super().on_remove()
+
     def get_config_rows(self) -> list:
         return [
             self.domain_combo.widget,
@@ -348,6 +357,10 @@ class LevelDial(CustomizationCore):
 
     def _send_pending_command(self) -> None:
         """Send the most recent pending command to Home Assistant."""
+        if getattr(self, "_disposed", False):
+            self._pending_command = None
+            self._batch_timer = None
+            return
         cmd = getattr(self, "_pending_command", None)
         if cmd is None:
             return
@@ -357,6 +370,8 @@ class LevelDial(CustomizationCore):
         self.plugin_base.backend.perform_action(domain, service, entity, params)
 
     def refresh(self, state: dict = None) -> None:
+        if getattr(self, "_disposed", False):
+            return
         if not self.initialized:
             return
 

@@ -246,6 +246,8 @@ class ShowText(CustomizationCore):
         """
         Executed when an entity is updated to reflect the changes on the key.
         """
+        if getattr(self, "_disposed", False):
+            return
         self.set_top_label(text_const.EMPTY_STRING)
         self.set_center_label(text_const.EMPTY_STRING)
         self.set_bottom_label(text_const.EMPTY_STRING)

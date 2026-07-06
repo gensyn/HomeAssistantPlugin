@@ -19,6 +19,25 @@ class TestBaseCoreOnReady(unittest.TestCase):
     @patch.object(BaseCore, "_load_domains")
     @patch.object(BaseCore, "_load_entities")
     @patch('HomeAssistantPlugin.actions.cores.base_core.base_core.migrate_settings')
+    def test_on_ready_disposed_noop(self, migrate_settings_mock, load_entities_mock, load_domains_mock, _, __):
+        settings_implementation = Mock()
+
+        instance = BaseCore(settings_implementation, True)
+        instance._disposed = True
+        instance.on_ready()
+
+        migrate_settings_mock.assert_not_called()
+        settings_implementation.assert_not_called()
+        instance.plugin_base.backend.add_action_ready_callback.assert_not_called()
+        instance.plugin_base.backend.add_tracked_entity.assert_not_called()
+        load_entities_mock.assert_not_called()
+        load_domains_mock.assert_not_called()
+
+    @patch.object(BaseCore, "create_ui_elements")
+    @patch.object(BaseCore, "_create_event_assigner")
+    @patch.object(BaseCore, "_load_domains")
+    @patch.object(BaseCore, "_load_entities")
+    @patch('HomeAssistantPlugin.actions.cores.base_core.base_core.migrate_settings')
     def test_on_read_no_entity(self, migrate_settings_mock, load_entities_mock, load_domains_mock, _, __):
         track_entity = True
 

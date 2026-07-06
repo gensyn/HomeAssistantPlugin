@@ -38,6 +38,7 @@ class BaseCore(ActionCore):
         self.settings = None
         self.settings_implementation = settings_implementation
         self.initialized = False
+        self._disposed = False
         self.lm = self.plugin_base.locale_manager
         self.has_configuration = True
         self.track_entity = track_entity
@@ -50,6 +51,8 @@ class BaseCore(ActionCore):
 
     def on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
+        if self._disposed:
+            return
         migrate_settings(self)
         self.settings = self.settings_implementation(self)
         self.initialized = True
@@ -69,6 +72,8 @@ class BaseCore(ActionCore):
     @requires_initialization
     def on_remove(self) -> None:
         """Clean up after action was removed."""
+        self._disposed = True
+        self.initialized = False
         self.plugin_base.backend.remove_action_ready_callback(self.on_ready)
 
         if self.track_entity:
@@ -76,7 +81,6 @@ class BaseCore(ActionCore):
                 self.settings.get_entity(),
                 self.refresh
             )
-        self.refresh()
 
     def get_config_rows(self) -> list:
         """Get the rows to be displayed in the UI."""

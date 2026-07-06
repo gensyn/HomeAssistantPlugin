@@ -32,7 +32,9 @@ class TestBaseCoreOnRemove(unittest.TestCase):
 
         instance.plugin_base.backend.remove_action_ready_callback.assert_called_once_with(instance.on_ready)
         instance.plugin_base.backend.remove_tracked_entity.assert_not_called()
-        refresh_mock.assert_called_once()
+        refresh_mock.assert_not_called()
+        self.assertFalse(instance.initialized)
+        self.assertTrue(instance._disposed)
 
     @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
@@ -52,5 +54,6 @@ class TestBaseCoreOnRemove(unittest.TestCase):
 
         instance.plugin_base.backend.remove_action_ready_callback.assert_called_once_with(instance.on_ready)
         instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with("entity", instance.refresh)
-        refresh_mock.assert_called_once()
-
+        refresh_mock.assert_not_called()
+        self.assertFalse(instance.initialized)
+        self.assertTrue(instance._disposed)
