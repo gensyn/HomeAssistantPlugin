@@ -2,20 +2,21 @@
 Modul to manage text customizations.
 """
 
-from typing import Tuple, Dict, Any
+from typing import Any
 
-from HomeAssistantPlugin.actions.show_text import text_const
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from HomeAssistantPlugin.actions.cores.customization_core.customization import Customization
+from HomeAssistantPlugin.actions.show_text import text_const
 
 
 class TextCustomization(Customization):
     """
     Class to represent a text customization.
     """
+
     def __init__(self, attribute: str, operator: str, value: str, position: str, text_attribute: str, custom_text: str,
-                 do_round: bool, round_precision: int, text_size: int, text_color: Tuple[int, int, int, int],
-                 outline_size: int, outline_color: Tuple[int, int, int, int], show_unit: bool, line_break: bool):
+                 do_round: bool, round_precision: int, text_size: int, text_color: tuple[int, int, int, int],
+                 outline_size: int, outline_color: tuple[int, int, int, int], show_unit: bool, line_break: bool):
         super().__init__(attribute, operator, value)
         self.position: str = position
         self.text_attribute: str = text_attribute
@@ -23,9 +24,9 @@ class TextCustomization(Customization):
         self.round: bool = do_round
         self.round_precision: int = round_precision
         self.text_size: int = text_size
-        self.text_color: Tuple[int, int, int, int] = text_color
+        self.text_color: tuple[int, int, int, int] = text_color
         self.outline_size: int = outline_size
-        self.outline_color: Tuple[int, int, int, int] = outline_color
+        self.outline_color: tuple[int, int, int, int] = outline_color
         self.show_unit: bool = show_unit
         self.line_break: bool = line_break
 
@@ -88,7 +89,7 @@ class TextCustomization(Customization):
         """
         return self.text_size
 
-    def get_text_color(self) -> Tuple[int, int, int, int]:
+    def get_text_color(self) -> tuple[int, int, int, int]:
         """
         Get the text color.
         :return: the text color
@@ -102,7 +103,7 @@ class TextCustomization(Customization):
         """
         return self.outline_size
 
-    def get_outline_color(self) -> Tuple[int, int, int, int]:
+    def get_outline_color(self) -> tuple[int, int, int, int]:
         """
         Get the text outline color.
         :return: the text outline color
@@ -123,7 +124,7 @@ class TextCustomization(Customization):
         """
         return self.line_break
 
-    def export(self) -> Dict[str, Any]:
+    def export(self) -> dict[str, Any]:
         """
         Get this customization as a dict.
         :return: this customization as a dict

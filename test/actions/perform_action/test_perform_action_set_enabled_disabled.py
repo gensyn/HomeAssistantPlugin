@@ -23,7 +23,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         instance = PerformAction()
         instance.settings = settings_mock
         instance.initialized = False
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         settings_mock.get_domain.assert_not_called()
 
@@ -52,7 +52,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         instance.lm = locale_manager
         instance.action_combo = action_combo_mock
         instance.parameters_expander = parameters_expander_mock
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         settings_mock.get_domain.assert_called_once()
         action_combo_mock.widget.set_sensitive.assert_called_once_with(False)
@@ -87,7 +87,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         instance.lm = locale_manager
         instance.action_combo = action_combo_mock
         instance.parameters_expander = parameters_expander_mock
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         settings_mock.get_domain.assert_called_once()
         action_combo_mock.widget.set_sensitive.assert_called_once_with(False)
@@ -140,7 +140,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         instance.entity_combo = entity_combo_mock
         instance.domain_combo = domain_combo_mock
         instance.plugin_base = plugin_base_mock
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         settings_mock.get_domain.assert_called_once()
         action_combo_mock.widget.set_sensitive.assert_called_once_with(True)
@@ -193,7 +193,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         instance.entity_combo = entity_combo_mock
         instance.domain_combo = domain_combo_mock
         instance.plugin_base = plugin_base_mock
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         settings_mock.get_domain.assert_called_once()
         action_combo_mock.widget.set_sensitive.assert_called_once_with(True)
@@ -245,7 +245,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         instance.entity_combo = entity_combo_mock
         instance.domain_combo = domain_combo_mock
         instance.plugin_base = plugin_base_mock
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         settings_mock.get_domain.assert_called_once()
         action_combo_mock.widget.set_sensitive.assert_called_once_with(True)
@@ -297,7 +297,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         instance.entity_combo = entity_combo_mock
         instance.domain_combo = domain_combo_mock
         instance.plugin_base = plugin_base_mock
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         settings_mock.get_domain.assert_called_once()
         action_combo_mock.widget.set_sensitive.assert_called_once_with(True)

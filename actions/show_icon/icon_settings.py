@@ -1,7 +1,5 @@
 """Module to manage action settings."""
 
-from typing import Tuple
-
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from HomeAssistantPlugin.actions.cores.customization_core.customization_settings import CustomizationSettings
 from HomeAssistantPlugin.actions.show_icon import icon_const
@@ -48,7 +46,7 @@ class ShowIconSettings(CustomizationSettings):
         """
         return self._get_icon_settings().get(icon_const.SETTING_ICON, icon_const.EMPTY_STRING)
 
-    def get_color(self) -> Tuple[int, int, int, int]:
+    def get_color(self) -> tuple[int, int, int, int]:
         """
         Get the color.
         :return: the color

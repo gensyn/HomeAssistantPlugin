@@ -2,7 +2,7 @@
 Module for text related operations.
 """
 import logging as log
-from typing import Dict, List, Any
+from typing import Any
 
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from HomeAssistantPlugin.actions.show_text import text_const
@@ -10,7 +10,7 @@ from HomeAssistantPlugin.actions.show_text.text_customization import TextCustomi
 from HomeAssistantPlugin.actions.show_text.text_settings import ShowTextSettings
 
 
-def get_text(state: Dict, settings: ShowTextSettings, is_connected: bool) -> (str, str, int, str, int, str):
+def get_text(state: dict, settings: ShowTextSettings, is_connected: bool) -> tuple[str, str, int, str, int, str]:
     """
     Determine text, position and font size to show on StreamDeck.
     """
@@ -35,7 +35,7 @@ def get_text(state: Dict, settings: ShowTextSettings, is_connected: bool) -> (st
     # Begin custom text
     #
 
-    customizations: List[TextCustomization] = settings.get_customizations()
+    customizations: list[TextCustomization] = settings.get_customizations()
 
     for customization in customizations:
         value = get_value(state, settings, customization)
@@ -67,7 +67,7 @@ def get_text(state: Dict, settings: ShowTextSettings, is_connected: bool) -> (st
             custom_text_value = float(custom_text_value)
         except ValueError:
             log.error("Could not convert custom value to float: %s",
-                          custom_text_value)
+                      custom_text_value)
             continue
 
         if ((operator == "<" and value < custom_text_value)
@@ -90,7 +90,7 @@ def get_text(state: Dict, settings: ShowTextSettings, is_connected: bool) -> (st
     return text, position, text_size, text_color, outline_size, outline_color
 
 
-def get_value(state: Dict, settings: ShowTextSettings, customization: TextCustomization) -> Any:
+def get_value(state: dict, settings: ShowTextSettings, customization: TextCustomization) -> Any:
     """
     Gets the current value that the customization references.
     """
@@ -113,14 +113,14 @@ def get_value(state: Dict, settings: ShowTextSettings, customization: TextCustom
     return value
 
 
-def _get_text(state: Dict, attribute: str, text_round: bool, round_precision: int, show_unit: bool,
+def _get_text(state: dict, attribute: str, text_round: bool, round_precision: int, show_unit: bool,
               line_break: bool) -> str:
     if attribute == text_const.STATE:
         text = _round_value(str(state.get(text_const.STATE)), text_round, round_precision)
 
         if show_unit:
             unit = state.get(customization_const.ATTRIBUTES, {}).get(customization_const.UNIT_OF_MEASUREMENT,
-                                                       text_const.EMPTY_STRING)
+                                                                     text_const.EMPTY_STRING)
 
             if line_break:
                 text = f"{text}\n{unit}"
@@ -135,8 +135,8 @@ def _get_text(state: Dict, attribute: str, text_round: bool, round_precision: in
 
 def _replace_values(text: str, position: str, attribute: str, text_round: bool,
                     round_precision: int,
-                    text_size: int, text_color: List[int], outline_size: int,
-                    outline_color: List[int], show_unit: bool, line_break: bool,
+                    text_size: int, text_color: list[int], outline_size: int,
+                    outline_color: list[int], show_unit: bool, line_break: bool,
                     customization: TextCustomization):
     ret_text = text
     ret_position = position

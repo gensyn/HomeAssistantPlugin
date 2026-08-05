@@ -98,3 +98,36 @@ class TestBackendRemoveTrackedEntity(unittest.TestCase):
         self.assertEqual(set(), instance._entities["light"]["light.living_room"][backend_const.ACTIONS])
         self.assertEqual(-1, instance._entities["light"]["light.living_room"][backend_const.SUBSCRIPTION_ID])
 
+    @patch.object(HomeAssistantBackend, 'connect')
+    @patch.object(HomeAssistantBackend, 'is_connected', return_value=True)
+    def test_remove_tracked_entity_unknown_domain(self, _, __):
+        entities = {
+            "sensor": {"sensor.temperature": {backend_const.STATE: "23", backend_const.ATTRIBUTES: {},
+                                              backend_const.ACTIONS: {"321"}, backend_const.SUBSCRIPTION_ID: 3}}
+        }
+
+        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
+        instance._entities = entities
+
+        # Should not raise KeyError when domain is not in _entities
+        instance.remove_tracked_entity("light.living_room", "123")
+
+        self.assertEqual({"321"}, instance._entities["sensor"]["sensor.temperature"][backend_const.ACTIONS])
+
+    @patch.object(HomeAssistantBackend, 'connect')
+    @patch.object(HomeAssistantBackend, 'is_connected', return_value=True)
+    def test_remove_tracked_entity_action_not_registered(self, _, __):
+        entities = {
+            "light": {"light.living_room": {backend_const.STATE: "on", backend_const.ATTRIBUTES: {},
+                                            backend_const.ACTIONS: {"321"}, backend_const.SUBSCRIPTION_ID: 2}},
+        }
+
+        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
+        instance._entities = entities
+
+        # Should not raise KeyError when action callback is not in the set
+        instance.remove_tracked_entity("light.living_room", "999")
+
+        self.assertEqual({"321"}, instance._entities["light"]["light.living_room"][backend_const.ACTIONS])
+        self.assertEqual(2, instance._entities["light"]["light.living_room"][backend_const.SUBSCRIPTION_ID])
+

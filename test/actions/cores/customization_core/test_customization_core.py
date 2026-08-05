@@ -65,17 +65,17 @@ class TestCustomizationCore(unittest.TestCase):
         instance._reload.assert_called_once()
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._create_ui_elements')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.create_ui_elements')
     @patch(
         'HomeAssistantPlugin.actions.cores.customization_core.customization_core.Button')
     @patch(
         'HomeAssistantPlugin.actions.cores.customization_core.customization_core.ExpanderRow')
-    def test_create_ui_elements(self, expander_row_mock, button_mock, super_create_ui_elements_mock):
+    def testcreate_ui_elements(self, expander_row_mock, button_mock, super_create_ui_elements_mock):
         button_mock.return_value = button_mock
         expander_row_mock.return_value = expander_row_mock
 
         instance = CustomizationCore.__new__(CustomizationCore)
-        instance._create_ui_elements()
+        instance.create_ui_elements()
 
         super_create_ui_elements_mock.assert_called_once()
         button_mock.assert_called_once_with(icon_name="list-add", valign=3)
@@ -216,7 +216,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.refresh.assert_called_once()
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._set_enabled_disabled')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_domain(self, super_set_enabled_disabled_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance.initialized = True
@@ -227,7 +227,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.lm = Mock()
         instance.lm.get.return_value = "label"
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.settings.get_domain.assert_called_once()
@@ -238,7 +238,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.customization_expander.set_expanded.assert_called_once_with(False)
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._set_enabled_disabled')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_entity(self, super_set_enabled_disabled_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance.initialized = True
@@ -249,7 +249,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.lm = Mock()
         instance.lm.get.return_value = "label"
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.settings.get_domain.assert_called_once()
@@ -260,7 +260,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.customization_expander.set_expanded.assert_called_once_with(False)
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._set_enabled_disabled')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_customizations(self, super_set_enabled_disabled_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance.initialized = True
@@ -272,7 +272,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.lm = Mock()
         instance.lm.get.return_value = "label"
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.settings.get_domain.assert_called_once()
@@ -283,7 +283,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.customization_expander.set_expanded.assert_called_once_with(False)
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._set_enabled_disabled')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.set_enabled_disabled')
     def test_set_enabled_disabled_with_customizations(self, super_set_enabled_disabled_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance.initialized = True
@@ -295,7 +295,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.lm = Mock()
         instance.lm.get.return_value = "label"
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.settings.get_domain.assert_called_once()
@@ -320,6 +320,7 @@ class TestCustomizationCore(unittest.TestCase):
     def test_load_customizations(self):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance.customization_expander = Mock()
+        instance._clearing = False
         instance._get_attributes = Mock()
         instance._get_attributes.return_value = ["attr1", "attr2"]
         instance.plugin_base = Mock()
@@ -348,3 +349,72 @@ class TestCustomizationCore(unittest.TestCase):
         delete_connect_mock.assert_has_calls([call(base_const.CONNECT_CLICKED, instance._on_delete_customization, 0), call(base_const.CONNECT_CLICKED, instance._on_delete_customization, 1)])
         up_connect_mock.assert_has_calls([call(base_const.CONNECT_CLICKED, instance._on_move_up, 0), call(base_const.CONNECT_CLICKED, instance._on_move_up, 1)])
         down_connect_mock.assert_has_calls([call(base_const.CONNECT_CLICKED, instance._on_move_down, 0), call(base_const.CONNECT_CLICKED, instance._on_move_down, 1)])
+
+    def test_load_customizations_skipped_while_clearing(self):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.customization_expander = Mock()
+        instance._clearing = True
+
+        instance._load_customizations()
+
+        instance.customization_expander.clear_rows.assert_not_called()
+
+    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_remove')
+    def test_on_remove_clears_expander_and_resets_flag(self, super_on_remove_mock):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.initialized = True
+        instance._clearing = False
+        instance.customization_expander = Mock()
+
+        instance.on_remove()
+
+        super_on_remove_mock.assert_called_once()
+        instance.customization_expander.clear_rows.assert_called_once()
+        self.assertFalse(instance._clearing)
+
+    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_remove')
+    def test_on_remove_sets_clearing_flag_during_super_call(self, super_on_remove_mock):
+        """_clearing must be True when super().on_remove() runs so that any
+        refresh() call triggered by the base class skips _load_customizations()."""
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.initialized = True
+        instance._clearing = False
+        instance.customization_expander = Mock()
+
+        flag_during_super = []
+
+        def capture_flag():
+            flag_during_super.append(instance._clearing)
+
+        super_on_remove_mock.side_effect = capture_flag
+
+        instance.on_remove()
+
+        self.assertTrue(flag_during_super[0])
+        self.assertFalse(instance._clearing)
+
+    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_remove')
+    def test_on_remove_clears_expander_even_when_super_raises(self, super_on_remove_mock):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.initialized = True
+        instance._clearing = False
+        instance.customization_expander = Mock()
+        super_on_remove_mock.side_effect = RuntimeError("boom")
+
+        with self.assertRaises(RuntimeError):
+            instance.on_remove()
+
+        instance.customization_expander.clear_rows.assert_called_once()
+        self.assertFalse(instance._clearing)
+
+    def test_on_remove_not_initialized(self):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.initialized = False
+        instance._clearing = False
+        instance.customization_expander = Mock()
+
+        result = instance.on_remove()
+
+        self.assertIsNone(result)
+        instance.customization_expander.clear_rows.assert_not_called()
+        self.assertFalse(instance._clearing)

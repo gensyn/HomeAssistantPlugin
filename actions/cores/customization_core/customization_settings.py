@@ -1,7 +1,5 @@
 """Module to manage HomeAssistantPlugin action settings."""
 
-from typing import List
-
 from HomeAssistantPlugin.actions.cores.base_core.base_settings import BaseSettings
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from HomeAssistantPlugin.actions.cores.customization_core.customization import Customization

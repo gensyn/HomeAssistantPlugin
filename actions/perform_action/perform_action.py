@@ -4,27 +4,34 @@ The module for the Home Assistant action that is loaded in StreamController.
 
 import json
 from json import JSONDecodeError
-from typing import List
+
+from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore, requires_initialization, \
+    set_substring_search
+from HomeAssistantPlugin.actions.perform_action import perform_const
+from HomeAssistantPlugin.actions.perform_action.parameters import parameters_helper
+from HomeAssistantPlugin.actions.perform_action.perform_settings import PerformActionSettings
 
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from GtkHelper.GenerativeUI.ExpanderRow import ExpanderRow
 from src.backend.DeckManagement.InputIdentifier import Input
 from src.backend.PluginManager.EventAssigner import EventAssigner
-from HomeAssistantPlugin.actions.perform_action import perform_const
-from HomeAssistantPlugin.actions.perform_action.parameters import parameters_helper
-from HomeAssistantPlugin.actions.perform_action.perform_settings import PerformActionSettings
-from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore, requires_initialization
 
 
 class PerformAction(BaseCore):
     """Action to be loaded by StreamController."""
 
     def __init__(self, *args, **kwargs):
+        # Must be set before create_ui_elements in BaseCore is called
+        self.action_combo = None
+        self.parameters_expander = None
         super().__init__(settings_implementation=PerformActionSettings, track_entity=False, *args, **kwargs)
 
     def on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
         super().on_ready()
+
+        if not self.plugin_base.backend.is_connected():
+            return
 
         self._load_actions()
         self._reload()
@@ -59,20 +66,21 @@ class PerformAction(BaseCore):
             callback=self._perform_action
         ))
 
-    def get_config_rows(self) -> List:
+    def get_config_rows(self) -> list:
         """Get the rows to be displayed in the UI."""
         return [self.domain_combo.widget, self.action_combo.widget, self.entity_combo.widget,
                 self.parameters_expander.widget]
 
-    def _create_ui_elements(self) -> None:
+    def create_ui_elements(self) -> None:
         """Get all action rows."""
-        super()._create_ui_elements()
+        super().create_ui_elements()
         self.action_combo: ComboRow = ComboRow(
             self, perform_const.SETTING_ACTION_ACTION, perform_const.EMPTY_STRING, [],
             perform_const.LABEL_SERVICE_SERVICE, enable_search=True,
             on_change=self._on_change_action, can_reset=False,
             complex_var_name=True
         )
+        set_substring_search(self.action_combo)
 
         self.parameters_expander: ExpanderRow = ExpanderRow(
             self, perform_const.EMPTY_STRING, False,
@@ -81,18 +89,18 @@ class PerformAction(BaseCore):
         )
 
     @requires_initialization
-    def _on_change_domain(self, _, domain, old_domain):
+    def on_change_domain(self, _, domain, old_domain):
         """Execute when the domain is changed."""
-        super()._on_change_domain(_, domain, old_domain)
+        super().on_change_domain(_, domain, old_domain)
 
         domain = str(domain) if domain is not None else None
         if domain:
             self._load_actions()
 
-        self._set_enabled_disabled()
+        self.set_enabled_disabled()
 
     @requires_initialization
-    def _on_change_entity(self, _, entity, old_entity):
+    def on_change_entity(self, _, entity, old_entity):
         """Execute when the entity is changed."""
         entity = str(entity) if entity is not None else None
         old_entity = str(old_entity) if old_entity is not None else None
@@ -100,7 +108,7 @@ class PerformAction(BaseCore):
         if old_entity == entity:
             return
 
-        super()._on_change_entity(_, entity, old_entity)
+        super().on_change_entity(_, entity, old_entity)
 
         if entity:
             parameters_helper.load_parameters(self)
@@ -108,8 +116,14 @@ class PerformAction(BaseCore):
         self._reload()
 
     @requires_initialization
-    def _on_change_action(self, _, __, ___) -> None:
+    def _on_change_action(self, _, action, old_action) -> None:
         """Execute when the action is changed."""
+        action = str(action) if action is not None else None
+        old_action = str(old_action) if old_action is not None else None
+
+        if old_action == action:
+            return
+
         self.settings.clear_parameters()
         parameters_helper.load_parameters(self)
         self._reload()
@@ -131,7 +145,7 @@ class PerformAction(BaseCore):
         parameters_helper.load_parameters(self)
 
     @requires_initialization
-    def _set_enabled_disabled(self) -> None:
+    def set_enabled_disabled(self) -> None:
         """
         Set the active/inactive state for all rows.
         """
@@ -169,6 +183,6 @@ class PerformAction(BaseCore):
             self.entity_combo.widget.set_sensitive(has_target)
 
     @requires_initialization
-    def _get_domains(self) -> List[str]:
+    def _get_domains(self) -> list[str]:
         """This class needs all domains that provide actions in Home Assistant."""
         return self.plugin_base.backend.get_domains_for_actions()

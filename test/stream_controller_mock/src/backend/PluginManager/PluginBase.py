@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any
 
 from HomeAssistantPlugin.const import SETTING_HOST, SETTING_PORT, SETTING_SSL, SETTING_TOKEN
 
@@ -23,5 +23,5 @@ class PluginBase:
     def get_settings(self):
         return self.settings
 
-    def set_settings(self, settings: Dict[str, Any]):
+    def set_settings(self, settings: dict[str, Any]):
         self.settings = settings

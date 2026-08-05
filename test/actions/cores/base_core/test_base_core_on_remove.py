@@ -14,7 +14,7 @@ from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore
 
 class TestBaseCoreOnRemove(unittest.TestCase):
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     @patch.object(BaseCore, "refresh")
     def test_on_read_entity_not_tracked(self, refresh_mock, _, __):
@@ -34,7 +34,7 @@ class TestBaseCoreOnRemove(unittest.TestCase):
         instance.plugin_base.backend.remove_tracked_entity.assert_not_called()
         refresh_mock.assert_called_once()
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     @patch.object(BaseCore, "refresh")
     def test_on_remove_success(self, refresh_mock, _, __):

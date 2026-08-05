@@ -83,7 +83,7 @@ class TestShowText(unittest.TestCase):
 
         self.assertEqual(result, expected)
 
-    @patch('HomeAssistantPlugin.actions.show_text.text_action.CustomizationCore._create_ui_elements')
+    @patch('HomeAssistantPlugin.actions.show_text.text_action.CustomizationCore.create_ui_elements')
     @patch('HomeAssistantPlugin.actions.show_text.text_action.ComboRow')
     @patch('HomeAssistantPlugin.actions.show_text.text_action.ExpanderRow')
     @patch('HomeAssistantPlugin.actions.show_text.text_action.ScaleRow')
@@ -94,7 +94,7 @@ class TestShowText(unittest.TestCase):
         instance = ShowText.__new__(ShowText)
         instance._reload = Mock()
 
-        instance._create_ui_elements()
+        instance.create_ui_elements()
 
         super_create_ui_elements_mock.assert_called_once()
         self.assertTrue(hasattr(instance, "position"))
@@ -150,7 +150,7 @@ class TestShowText(unittest.TestCase):
                  can_reset=False, complex_var_name=True)
         ])
 
-    @patch('HomeAssistantPlugin.actions.show_text.text_action.CustomizationCore._set_enabled_disabled')
+    @patch('HomeAssistantPlugin.actions.show_text.text_action.CustomizationCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_domain(self, super_set_enabled_disabled_mock):
         lm = {
             text_const.LABEL_NO_ENTITY: "No entity selected"
@@ -173,7 +173,7 @@ class TestShowText(unittest.TestCase):
         instance.show_unit = Mock()
         instance.unit_line_break = Mock()
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.position.widget.set_sensitive.assert_called_once_with(False)
@@ -197,7 +197,7 @@ class TestShowText(unittest.TestCase):
         instance.unit_line_break.widget.set_sensitive.assert_called_once_with(False)
         instance.unit_line_break.widget.set_subtitle.assert_called_once_with(lm[text_const.LABEL_NO_ENTITY])
 
-    @patch('HomeAssistantPlugin.actions.show_text.text_action.CustomizationCore._set_enabled_disabled')
+    @patch('HomeAssistantPlugin.actions.show_text.text_action.CustomizationCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_entity(self, super_set_enabled_disabled_mock):
         lm = {
             text_const.LABEL_NO_ENTITY: "No entity selected"
@@ -220,7 +220,7 @@ class TestShowText(unittest.TestCase):
         instance.show_unit = Mock()
         instance.unit_line_break = Mock()
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.position.widget.set_sensitive.assert_called_once_with(False)
@@ -244,7 +244,7 @@ class TestShowText(unittest.TestCase):
         instance.unit_line_break.widget.set_sensitive.assert_called_once_with(False)
         instance.unit_line_break.widget.set_subtitle.assert_called_once_with(lm[text_const.LABEL_NO_ENTITY])
 
-    @patch('HomeAssistantPlugin.actions.show_text.text_action.CustomizationCore._set_enabled_disabled')
+    @patch('HomeAssistantPlugin.actions.show_text.text_action.CustomizationCore.set_enabled_disabled')
     def test_set_enabled_disabled_without_unit(self, super_set_enabled_disabled_mock):
         lm = {
             text_const.LABEL_NO_ENTITY: "No entity selected"
@@ -275,7 +275,7 @@ class TestShowText(unittest.TestCase):
         instance.show_unit.get_active.return_value = False
         instance.unit_line_break = Mock()
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.position.widget.set_sensitive.assert_called_once_with(True)
@@ -301,7 +301,7 @@ class TestShowText(unittest.TestCase):
         instance.unit_line_break.widget.set_sensitive.assert_has_calls([call(False), call(False)])
         instance.unit_line_break.widget.set_subtitle.assert_called_once_with(text_const.EMPTY_STRING)
 
-    @patch('HomeAssistantPlugin.actions.show_text.text_action.CustomizationCore._set_enabled_disabled')
+    @patch('HomeAssistantPlugin.actions.show_text.text_action.CustomizationCore.set_enabled_disabled')
     def test_set_enabled_disabled_with_unit(self, super_set_enabled_disabled_mock):
         lm = {
             text_const.LABEL_NO_ENTITY: "No entity selected"
@@ -335,7 +335,7 @@ class TestShowText(unittest.TestCase):
         instance.show_unit.get_active.return_value = True
         instance.unit_line_break = Mock()
 
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         super_set_enabled_disabled_mock.assert_called_once()
         instance.position.widget.set_sensitive.assert_called_once_with(True)
@@ -359,13 +359,13 @@ class TestShowText(unittest.TestCase):
         instance.unit_line_break.widget.set_sensitive.assert_called_once_with(True)
         instance.unit_line_break.widget.set_subtitle.assert_called_once_with(text_const.EMPTY_STRING)
 
-    @patch('HomeAssistantPlugin.actions.show_text.text_action.CustomizationCore._on_change_entity')
+    @patch('HomeAssistantPlugin.actions.show_text.text_action.CustomizationCore.on_change_entity')
     def test_on_change_entity(self, super_on_change_entity_mock):
         instance = ShowText.__new__(ShowText)
         instance.initialized = True
         instance._load_attributes = Mock()
 
-        instance._on_change_entity(None, "entity", "old_entity")
+        instance.on_change_entity(None, "entity", "old_entity")
         instance._load_attributes.assert_called_once()
         super_on_change_entity_mock.assert_called_once_with(None, "entity", "old_entity")
 
@@ -427,7 +427,7 @@ class TestShowText(unittest.TestCase):
         instance.plugin_base.backend.get_entity.return_value = {"state": "state"}
         instance._load_attributes = Mock()
         instance._load_customizations = Mock()
-        instance._set_enabled_disabled = Mock()
+        instance.set_enabled_disabled = Mock()
         text_helper_mock.get_text.return_value = ("a", "b", "c", "d", "e", "f")
 
         instance.refresh()
@@ -440,7 +440,7 @@ class TestShowText(unittest.TestCase):
         instance.settings.get_entity.assert_not_called()
         instance._load_attributes.assert_not_called()
         instance._load_customizations.assert_not_called()
-        instance._set_enabled_disabled.assert_not_called()
+        instance.set_enabled_disabled.assert_not_called()
 
     @patch('HomeAssistantPlugin.actions.show_text.text_action.text_helper')
     def test_refresh_no_entity(self, text_helper_mock):
@@ -454,7 +454,7 @@ class TestShowText(unittest.TestCase):
         instance.settings.get_entity.return_value = ""
         instance._load_attributes = Mock()
         instance._load_customizations = Mock()
-        instance._set_enabled_disabled = Mock()
+        instance.set_enabled_disabled = Mock()
 
         instance.refresh()
 
@@ -464,7 +464,7 @@ class TestShowText(unittest.TestCase):
         instance.settings.get_entity.assert_called_once()
         instance._load_attributes.assert_not_called()
         instance._load_customizations.assert_not_called()
-        instance._set_enabled_disabled.assert_not_called()
+        instance.set_enabled_disabled.assert_not_called()
 
     @patch('HomeAssistantPlugin.actions.show_text.text_action.text_helper')
     def test_refresh_no_state(self, text_helper_mock):
@@ -480,7 +480,7 @@ class TestShowText(unittest.TestCase):
         instance.plugin_base.backend.get_entity.return_value = None
         instance._load_attributes = Mock()
         instance._load_customizations = Mock()
-        instance._set_enabled_disabled = Mock()
+        instance.set_enabled_disabled = Mock()
 
         instance.refresh()
 
@@ -490,7 +490,7 @@ class TestShowText(unittest.TestCase):
         instance.settings.get_entity.assert_called_once()
         instance._load_attributes.assert_called_once()
         instance._load_customizations.assert_not_called()
-        instance._set_enabled_disabled.assert_not_called()
+        instance.set_enabled_disabled.assert_not_called()
 
     @patch('HomeAssistantPlugin.actions.show_text.text_action.text_helper')
     def test_refresh_success(self, text_helper_mock):
@@ -507,7 +507,7 @@ class TestShowText(unittest.TestCase):
         instance.plugin_base.backend.get_entity.return_value = {"state": "state"}
         instance._load_attributes = Mock()
         instance._load_customizations = Mock()
-        instance._set_enabled_disabled = Mock()
+        instance.set_enabled_disabled = Mock()
         text_helper_mock.get_text.return_value = ("a", "b", "c", "d", "e", "f")
 
         instance.refresh()
@@ -520,7 +520,7 @@ class TestShowText(unittest.TestCase):
         text_helper_mock.get_text.assert_called_once_with({"state": "state"}, instance.settings, True)
         instance.set_label.assert_called_once_with("a", "b", "d", None, "c", "e", "f", None, None, True)
         instance._load_customizations.assert_called_once()
-        instance._set_enabled_disabled.assert_called_once()
+        instance.set_enabled_disabled.assert_called_once()
 
     def test_get_domains(self):
         instance = ShowText.__new__(ShowText)

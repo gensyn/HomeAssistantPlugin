@@ -28,6 +28,9 @@
     "actions.home_assistant.icon.opacity.label": "Opacity:",
     "actions.home_assistant.icon.scale.label": "Scale:",
     "actions.home_assistant.icon.custom_icon.label": "Customize:",
+    "actions.home_assistant.icon.browse.label": "Browse...",
+     "actions.home_assistant.icon.image.label": "Image:",
+    "actions.home_assistant.icon.only_supported_for_icons.label": "Only supported for icons",
     "actions.home_assistant.icon.no_entity.label": "No entity selected",
 
     "actions.home_assistant.text.show_text.label": "Show text:",
@@ -65,5 +68,14 @@
     "actions.home_assistant.customization.less_than.label": "is less than",
     "actions.home_assistant.customization.less_than_equals.label": "is less than or equals",
     "actions.home_assistant.customization.greater_than.label": "is greater than",
-    "actions.home_assistant.customization.greater_than_equals.label": "is greater than or equals"
+    "actions.home_assistant.customization.greater_than_equals.label": "is greater than or equals",
+
+    "actions.home_assistant.level.step.label": "Step size:",
+    "actions.home_assistant.level.label.label": "Display name:",
+    "actions.home_assistant.level.batch_delay.label": "Batch delay (ms):",
+    "actions.home_assistant.level.no_entity.label": "No entity selected",
+    "actions.home_assistant.level.icon.label": "Icon:",
+    "actions.home_assistant.level.color.label": "Color:",
+
+    "actions.home_assistant.customization.level_title.label": "Customize level dial"
 }

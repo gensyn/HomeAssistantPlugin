@@ -28,6 +28,9 @@
     "actions.home_assistant.icon.opacity.label": "Deckkraft:",
     "actions.home_assistant.icon.scale.label": "Größe:",
     "actions.home_assistant.icon.custom_icon.label": "Anpassen:",
+    "actions.home_assistant.icon.image.label": "Bild:",
+    "actions.home_assistant.icon.browse.label": "Durchsuchen...",
+    "actions.home_assistant.icon.only_supported_for_icons.label": "Nur für Icons unterstützt",
     "actions.home_assistant.icon.no_entity.label": "Keine Entität ausgewählt",
 
     "actions.home_assistant.text.show_text.label": "Text anzeigen:",
@@ -65,5 +68,14 @@
     "actions.home_assistant.customization.less_than.label": "ist kleiner",
     "actions.home_assistant.customization.less_than_equals.label": "ist kleiner gleich",
     "actions.home_assistant.customization.greater_than.label": "ist größer",
-    "actions.home_assistant.customization.greater_than_equals.label": "ist größer gleich"
+    "actions.home_assistant.customization.greater_than_equals.label": "ist größer gleich",
+
+    "actions.home_assistant.level.step.label": "Schrittweite:",
+    "actions.home_assistant.level.label.label": "Anzeigename:",
+    "actions.home_assistant.level.batch_delay.label": "Batch-Verzögerung (ms):",
+    "actions.home_assistant.level.no_entity.label": "Keine Entität ausgewählt",
+    "actions.home_assistant.level.icon.label": "Icon:",
+    "actions.home_assistant.level.color.label": "Farbe:",
+
+    "actions.home_assistant.customization.level_title.label": "Drehregler anpassen"
 }

@@ -18,12 +18,12 @@ class TestWebsocketRunForever(unittest.TestCase):
         instance = HomeAssistantWebsocket(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, None, None, None)
         instance.run_forever()
 
-        websocket_app_mock.assert_called_once_with(sslopt={}, reconnect=backend_const.RECONNECT_INTERVAL)
+        websocket_app_mock.assert_called_once_with(sslopt={})
 
     @patch("HomeAssistantPlugin.backend.home_assistant_websocket.WebSocketApp.run_forever")
     def test_run_forever_dont_verify_certificate(self, websocket_app_mock):
         instance = HomeAssistantWebsocket(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, False, None, None, None)
         instance.run_forever()
 
-        websocket_app_mock.assert_called_once_with(sslopt={backend_const.CERT_REQS: CERT_NONE}, reconnect=backend_const.RECONNECT_INTERVAL)
+        websocket_app_mock.assert_called_once_with(sslopt={backend_const.CERT_REQS: CERT_NONE})
 

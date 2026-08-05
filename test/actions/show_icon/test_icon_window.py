@@ -24,7 +24,8 @@ class TestIconWindow(unittest.TestCase):
     @patch.object(IconWindow, "_create_scale")
     @patch.object(IconWindow, "_create_scale_entry")
     @patch.object(IconWindow, "_create_label")
-    def test_init(self, create_label_mock, create_scale_entry_mock, create_scale_mock, create_color_button_mock,
+    @patch('HomeAssistantPlugin.actions.show_icon.icon_window.Button')
+    def test_init(self, button_mock, create_label_mock, create_scale_entry_mock, create_scale_mock, create_color_button_mock,
                   create_entry_mock, create_check_button_mock, after_init_mock, set_title_mock,
                   customization_window_init_mock):
         lm = Mock()
@@ -51,12 +52,12 @@ class TestIconWindow(unittest.TestCase):
         customization_window_init_mock.assert_called_once_with(instance, lm, attributes, callback, current,
                                                                index)  # with instance because of autospec
         set_title_mock.assert_called_once_with("Test Title")
-        self.assertEqual(14, instance.grid_fields.attach.call_count)
+        self.assertEqual(15, instance.grid_fields.attach.call_count)
         after_init_mock.assert_called_once()
 
     @patch(
-        'HomeAssistantPlugin.actions.show_icon.icon_window.CustomizationWindow._set_default_values')
-    def test_set_default_values(self, super_set_default_values_mock):
+        'HomeAssistantPlugin.actions.show_icon.icon_window.CustomizationWindow.set_default_values')
+    def testset_default_values(self, super_set_default_values_mock):
         instance = IconWindow.__new__(IconWindow)
         instance.color = Mock()
         instance.scale = Mock()
@@ -64,7 +65,7 @@ class TestIconWindow(unittest.TestCase):
         instance.opacity = Mock()
         instance.opacity_entry = Mock()
 
-        instance._set_default_values()
+        instance.set_default_values()
 
         super_set_default_values_mock.assert_called_once()
         instance.color.set_rgba.assert_called_once()
@@ -74,17 +75,17 @@ class TestIconWindow(unittest.TestCase):
         instance.opacity_entry.set_text.assert_called_once_with(str(icon_const.DEFAULT_ICON_OPACITY))
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_window.CustomizationWindow._set_current_values')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_window.CustomizationWindow.set_current_values')
     def test_set_current_values_no_current(self, super_set_current_values_mock):
         instance = IconWindow.__new__(IconWindow)
         instance.current = None
 
-        instance._set_current_values()
+        instance.set_current_values()
 
         super_set_current_values_mock.assert_not_called()
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_window.CustomizationWindow._set_current_values')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_window.CustomizationWindow.set_current_values')
     def test_set_current_values_with_current(self, super_set_current_values_mock):
         instance = IconWindow.__new__(IconWindow)
         instance.current = Mock()
@@ -104,7 +105,7 @@ class TestIconWindow(unittest.TestCase):
         instance.opacity_entry = Mock()
         instance.check_opacity = Mock()
 
-        instance._set_current_values()
+        instance.set_current_values()
 
         super_set_current_values_mock.assert_called_once()
         instance.icon.set_text.assert_called_once_with("icon_name")
@@ -132,15 +133,14 @@ class TestIconWindow(unittest.TestCase):
 
     @patch(
         'HomeAssistantPlugin.actions.cores.customization_core.customization_window.CustomizationWindow.on_add_button')
-    def test_on_add_button_icon_not_valid(self, super_on_add_button_mock):
+    def test_on_add_button_icon_checked_but_empty(self, super_on_add_button_mock):
         super_on_add_button_mock.return_value = True
 
         instance = IconWindow.__new__(IconWindow)
         instance.check_icon = Mock()
         instance.check_icon.get_active.return_value = True
         instance.icon = Mock()
-        instance.icon.get_text.return_value = "mdi:home"
-        instance.icons = ["not_home"]
+        instance.icon.get_text.return_value = ""
         instance.on_add_button()
 
         super_on_add_button_mock.assert_called_once()
@@ -231,7 +231,7 @@ class TestIconWindow(unittest.TestCase):
         instance.destroy.assert_called_once()
 
     @patch(
-        'HomeAssistantPlugin.actions.cores.customization_core.customization_window.CustomizationWindow._on_widget_changed')
+        'HomeAssistantPlugin.actions.cores.customization_core.customization_window.CustomizationWindow.on_widget_changed')
     def test_on_widget_changed(self, super_on_widget_changed_mock):
         instance = IconWindow.__new__(IconWindow)
         instance.icon = Mock()
@@ -240,7 +240,7 @@ class TestIconWindow(unittest.TestCase):
         instance.check_scale = Mock()
         instance.check_opacity = Mock()
 
-        instance._on_widget_changed()
+        instance.on_widget_changed()
 
         super_on_widget_changed_mock.assert_called_once()
         instance.icon.remove_css_class.assert_called_once_with(icon_const.ERROR)

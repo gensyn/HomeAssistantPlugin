@@ -2,8 +2,16 @@
 The module for the Home Assistant customization icon window.
 """
 
+import os
 from functools import partial
-from typing import Callable, List
+from typing import Callable
+
+import gi
+gi.require_version("Gtk", "4.0")
+from gi.repository import Gio
+from gi.repository.Gtk import Button, FileDialog, FileFilter
+
+from loguru import logger as log
 
 from HomeAssistantPlugin.actions import const as base_const
 from HomeAssistantPlugin.actions.cores.customization_core import customization_helper
@@ -17,11 +25,11 @@ class IconWindow(CustomizationWindow):
     Window to customize icons.
     """
 
-    def __init__(self, lm, attributes: List, callback: Callable,
+    def __init__(self, lm, attributes: list, callback: Callable,
                  current: IconCustomization = None, index: int = None):
         super().__init__(lm, attributes, callback, current, index)
 
-        self.icons: List[str] = list(icon_helper.MDI_ICONS)
+        self.icons: list[str] = list(icon_helper.MDI_ICONS)
 
         self.set_title(lm.get(icon_const.CUSTOMIZATION_WINDOW_TITLE))
 
@@ -38,7 +46,16 @@ class IconWindow(CustomizationWindow):
         self.icon = self._create_entry(self.check_icon)
         self.icon.set_margin_end(self.default_margin)
         self.connect_rows.append(
-            partial(self.icon.connect, base_const.CONNECT_ACTIVATE, self._on_widget_changed))
+            partial(self.icon.connect, base_const.CONNECT_ACTIVATE, self.on_widget_changed))
+        self.connect_rows.append(
+            partial(self.icon.connect, base_const.CONNECT_CHANGED, self._on_icon_changed))
+
+        browse_button = Button(label=self.lm.get(icon_const.LABEL_ICON_BROWSE))
+        browse_button.set_margin_top(self.default_margin)
+        browse_button.set_margin_bottom(self.default_margin)
+        browse_button.set_margin_start(self.default_margin)
+        browse_button.set_margin_end(15)
+        self.connect_rows.append(partial(browse_button.connect, base_const.CONNECT_CLICKED, self._on_browse_clicked))
 
         self.color = self._create_color_button(self.check_color)
 
@@ -75,6 +92,7 @@ class IconWindow(CustomizationWindow):
         self.grid_fields.attach(self.check_icon, 2, 2, 1, 1)
         self.grid_fields.attach(label_icon, 3, 2, 1, 1)
         self.grid_fields.attach(self.icon, 4, 2, 1, 1)
+        self.grid_fields.attach(browse_button, 5, 2, 1, 1)
 
         self.grid_fields.attach(self.check_color, 2, 3, 1, 1)
         self.grid_fields.attach(label_color, 3, 3, 1, 1)
@@ -92,8 +110,8 @@ class IconWindow(CustomizationWindow):
 
         self._after_init()
 
-    def _set_default_values(self) -> None:
-        super()._set_default_values()
+    def set_default_values(self) -> None:
+        super().set_default_values()
 
         rgba = customization_helper.convert_color_list_to_rgba(icon_const.DEFAULT_ICON_COLOR)
         self.color.set_rgba(rgba)
@@ -104,14 +122,15 @@ class IconWindow(CustomizationWindow):
         self.opacity.set_value(icon_const.DEFAULT_ICON_OPACITY)
         self.opacity_entry.set_text(str(icon_const.DEFAULT_ICON_OPACITY))
 
-    def _set_current_values(self) -> None:
+    def set_current_values(self) -> None:
         if not self.current:
             return
 
-        super()._set_current_values()
+        super().set_current_values()
 
         self.icon.set_text(self.current.get_icon() or icon_const.EMPTY_STRING)
         self.check_icon.set_active(self.current.get_icon() is not None)
+        self._on_icon_changed()
 
         if self.current.get_color():
             rgba = customization_helper.convert_color_list_to_rgba(self.current.get_color())
@@ -130,22 +149,16 @@ class IconWindow(CustomizationWindow):
         self.opacity_entry.set_text(
             str(int(self.current.get_opacity() or icon_const.DEFAULT_ICON_OPACITY)))
 
-    def on_add_button(self, *args, **kwargs) -> None:
+    def on_add_button(self, *_, **__) -> None:
         if not super().on_add_button():
             return
 
-        if self.check_icon.get_active():
-            icon = self.icon.get_text()
-
-            if icon.startswith("mdi:"):
-                icon = icon[4:]
-
-            if icon not in self.icons:
-                self.icon.add_css_class(icon_const.ERROR)
-                return
+        if self.check_icon.get_active() and not self.icon.get_text():
+            self.icon.add_css_class(icon_const.ERROR)
+            return
 
         if (not self.check_icon.get_active() and not self.check_color.get_active() and not
-        self.check_scale.get_active() and not self.check_opacity.get_active()):
+                self.check_scale.get_active() and not self.check_opacity.get_active()):
             self.check_icon.add_css_class(icon_const.ERROR)
             self.check_color.add_css_class(icon_const.ERROR)
             self.check_scale.add_css_class(icon_const.ERROR)
@@ -156,8 +169,7 @@ class IconWindow(CustomizationWindow):
         color = self.color.get_rgba() if self.check_color.get_active() else None
         color_list = customization_helper.convert_rgba_to_color_list(color) if color else None
         scale = int(self.scale.get_value()) if self.check_scale.get_active() else None
-        opacity = int(
-            self.opacity.get_value()) if self.check_opacity.get_active() else None
+        opacity = int(self.opacity.get_value()) if self.check_opacity.get_active() else None
 
         self.callback(customization=IconCustomization(
             attribute=self.condition_attribute.get_selected_item().get_string(),
@@ -167,8 +179,45 @@ class IconWindow(CustomizationWindow):
 
         self.destroy()
 
-    def _on_widget_changed(self, *args, **kwargs) -> None:
-        super()._on_widget_changed()
+    def _on_icon_changed(self, *_) -> None:
+        icon_value = self.icon.get_text()
+        has_icon = bool(icon_value) and icon_value in icon_helper.MDI_ICONS
+        for widget in [self.check_color, self.color, self.check_opacity, self.opacity, self.opacity_entry]:
+            widget.set_sensitive(has_icon)
+
+    def _on_browse_clicked(self, *_) -> None:
+        dialog = FileDialog()
+        dialog.set_title(self.lm.get(icon_const.LABEL_ICON_IMAGE))
+
+        filter_images = FileFilter()
+        filter_images.set_name("Images")
+        for mime in ("image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"):
+            filter_images.add_mime_type(mime)
+
+        filters = Gio.ListStore.new(FileFilter)
+        filters.append(filter_images)
+        dialog.set_filters(filters)
+        dialog.set_default_filter(filter_images)
+
+        if self.icon.get_text():
+            current_dir = os.path.dirname(self.icon.get_text())
+            if os.path.isdir(current_dir):
+                dialog.set_initial_folder(Gio.File.new_for_path(current_dir))
+
+        dialog.open(self, None, self._on_file_chosen)
+
+    def _on_file_chosen(self, dialog, result) -> None:
+        try:
+            file = dialog.open_finish(result)
+            if file:
+                self.icon.set_text(file.get_path())
+                self.check_icon.set_active(True)
+                self._on_icon_changed()
+        except Exception as e:
+            log.error(f"Error choosing file: {e}")
+
+    def on_widget_changed(self, *_, **__) -> None:
+        super().on_widget_changed()
 
         self.icon.remove_css_class(icon_const.ERROR)
         self.check_icon.remove_css_class(icon_const.ERROR)

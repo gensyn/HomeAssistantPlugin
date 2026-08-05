@@ -14,7 +14,7 @@ from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore
 
 class TestBaseCoreGetGenerativeUi(unittest.TestCase):
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     def test_get_generative_ui_success(self, _, __):
         instance = BaseCore(Mock(), True)

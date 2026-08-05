@@ -28,6 +28,7 @@
   - [Perform Action](#-perform-action)
   - [Show Icon](#-show-icon)
   - [Show Text](#-show-text)
+  - [Level Dial](#-level-dial)
 - [Examples](#-examples)
 - [Support](#-support)
 
@@ -57,11 +58,13 @@
   - Disable `key_down` by mapping it to `None`
 
 ### 🎨 Show an Icon
-- Display entity icons or custom icons from [Material Design Icons](https://pictogrammers.com/library/mdi/)
+- Display entity icons or custom icons from [Material Design Icons](https://pictogrammers.com/library/mdi/) as well as images and GIFs
 - Customize icon appearance:
   - 🎨 Color
   - 📏 Scale
   - 🌫️ Opacity
+- Customize image appearance:
+  - 📏 Scale
 - **Dynamic customization** based on state or attribute values
 - Automatic updates when entity state changes
 
@@ -75,6 +78,15 @@
   - 🔲 Outline size and color
 - Show unit of measurement (with optional line breaks)
 - **Dynamic customization** based on state or attribute values
+
+### 🎛️ Level Dial
+- Control entity levels with a Stream Deck Plus dial
+- Supports lights (brightness), fans (speed), covers (position), and media players (volume)
+- Turn CW/CCW to adjust level, press to toggle on/off
+- Displays current level as a percentage on the touchscreen
+- Shows the entity's icon with on/off color tinting
+- Configurable step size, display name, and command batching delay
+- **Dynamic customization** of icon and color based on state or attribute values
 
 ## 📥 Installation
 
@@ -245,6 +257,51 @@ Create conditional text appearances based on entity states.
 
 ---
 
+### 🎛️ Level Dial
+
+Control Home Assistant entity levels directly from a Stream Deck Plus dial.
+
+**Configuration:**
+- **Entity**: Select the Home Assistant entity to control
+- **Display name**: Custom label for the touchscreen (defaults to entity's friendly name)
+- **Step size**: Percentage change per dial tick (1–50)
+- **Batch delay**: Milliseconds to wait for additional turns before sending the command (0–500)
+  - Prevents flooding your network with rapid dial turns
+
+**Supported Domains:**
+- **Lights**: Adjusts brightness (0–255 mapped to percentage)
+- **Fans**: Adjusts speed percentage
+- **Covers**: Adjusts position
+- **Media players**: Adjusts volume
+
+**Controls:**
+- **Turn CW/CCW**: Increase/decrease level
+- **Press**: Toggle entity on/off
+
+**Behavior:**
+- Displays the target percentage immediately on each tick, before Home Assistant confirms
+- Batches rapid turns into a single command to avoid mesh/network flooding
+- Fine-grained 1% steps below 10% for precise low-level control
+- Shows the entity's icon from Home Assistant with color tinting (on/off)
+
+#### 🎯 Level Dial Customization
+
+Create conditional icon and color appearances based on entity states.
+
+**Creating a Customization:**
+1. Click the ![Add customization](assets/action_customize_add.png) button in the **Customize** row
+2. Define a condition (state or attribute value)
+3. Configure icon and/or color changes when the condition is met
+
+**Features:**
+- ✏️ Edit, delete, and reorder customizations
+- 👁️ View current entity value for reference
+- ✅ Only checked settings are applied
+
+> **Cascading Behavior**: Like icon and text customizations, level dial customizations are evaluated in order. The last matching customization sets the final icon and color.
+
+---
+
 ## 🎯 Examples
 
 ### 🌤️ Weather Display
@@ -325,7 +382,7 @@ Currently, all planned features have been implemented! Have a suggestion? [Open 
 
 If you encounter any problems or have questions:
 
-1. 📖 Check the [documentation](#documentation) above
+1. 📖 Check the [documentation](#-documentation) above
 2. 🔍 Search [existing issues](https://github.com/gensyn/HomeAssistantPlugin/issues)
 3. 🐛 [Open a new issue](https://github.com/gensyn/HomeAssistantPlugin/issues/new) with:
    - Detailed description of the problem
@@ -341,12 +398,11 @@ Contributions are welcome! Feel free to:
 - 📝 Improve documentation
 - 🔧 Submit pull requests
 
+
 ---
 
-<div align="center">
+## ⭐ Support
 
-**Made with ❤️ for the Home Assistant and StreamController communities**
+If you find HomeAssistantPlugin useful, please consider giving it a star on GitHub! It helps others discover the project. 
 
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github)](https://github.com/gensyn/HomeAssistantPlugin)
-
-</div>
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M5G61ZZY8D)

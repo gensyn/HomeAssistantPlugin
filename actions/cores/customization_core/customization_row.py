@@ -1,10 +1,9 @@
 """
 The module for the Home Assistant customization row.
 """
-from typing import List, Dict, Any
+from typing import Any
 
 import gi
-
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from HomeAssistantPlugin.actions.cores.customization_core.customization import Customization
 from HomeAssistantPlugin.actions.cores.customization_core.customization_settings import CustomizationSettings
@@ -20,7 +19,7 @@ class CustomizationRow(ActionRow):
     Base for customization rows
     """
 
-    def __init__(self, lm, customization_count: int, index: int, attributes: List, state: Dict,
+    def __init__(self, lm, customization_count: int, index: int, attributes: list, state: dict,
                  settings: CustomizationSettings):
         super().__init__()
 

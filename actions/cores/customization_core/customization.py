@@ -2,13 +2,14 @@
 Modul to manage customizations.
 """
 
-from typing import Dict, Any
+from typing import Any
 
 
 class Customization:
     """
     Base class to represent a customization.
     """
+
     def __init__(self, attribute: str, operator: str, value: str):
         self.attribute: str = attribute
         self.operator: str = operator
@@ -35,7 +36,7 @@ class Customization:
         """
         return self.value
 
-    def export(self) -> Dict[str, Any]:
+    def export(self) -> dict[str, Any]:
         """
         Get this customization as a dict. Must be implemented in a subclass.
         :return: this customization as a dict

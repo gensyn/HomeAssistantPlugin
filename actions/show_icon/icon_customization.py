@@ -2,7 +2,7 @@
 Modul to manage icon customizations.
 """
 
-from typing import Tuple, Dict, Any
+from typing import Any
 
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from HomeAssistantPlugin.actions.cores.customization_core.customization import Customization
@@ -14,11 +14,11 @@ class IconCustomization(Customization):
     Class to represent an icon customization.
     """
 
-    def __init__(self, attribute: str, operator: str, value: str, icon: str, color: Tuple[int, int, int, int],
+    def __init__(self, attribute: str, operator: str, value: str, icon: str, color: tuple[int, int, int, int],
                  scale: int, opacity: int):
         super().__init__(attribute, operator, value)
         self.icon: str = icon
-        self.color: Tuple[int, int, int, int] = color
+        self.color: tuple[int, int, int, int] = color
         self.scale: int = scale
         self.opacity: int = opacity
 
@@ -37,7 +37,7 @@ class IconCustomization(Customization):
         """
         return self.icon
 
-    def get_color(self) -> Tuple[int, int, int, int]:
+    def get_color(self) -> tuple[int, int, int, int]:
         """
         Get the icon color.
         :return:the icon color
@@ -58,7 +58,7 @@ class IconCustomization(Customization):
         """
         return self.opacity
 
-    def export(self) -> Dict[str, Any]:
+    def export(self) -> dict[str, Any]:
         """
         Get this customization as a dict.
         :return: this customization as a dict

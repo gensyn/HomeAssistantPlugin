@@ -17,12 +17,12 @@ class TestPerformActionCreateUiElements(unittest.TestCase):
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._create_ui_elements')
+        'HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.create_ui_elements')
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.ComboRow')
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.ExpanderRow')
     def test_create_ui_elements_success(self, expander_row_mock, combo_row_mock, create_ui_elements_mock, _):
         instance = PerformAction()
-        instance._create_ui_elements()
+        instance.create_ui_elements()
 
         create_ui_elements_mock.assert_called_once()
         combo_row_mock.assert_called_once_with(

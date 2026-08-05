@@ -83,10 +83,10 @@ class TestTextWindow(unittest.TestCase):
         instance.custom_text.set_visible.assert_called_once_with(True)
 
     @patch(
-        'HomeAssistantPlugin.actions.show_text.text_window.CustomizationWindow._set_default_values')
+        'HomeAssistantPlugin.actions.show_text.text_window.CustomizationWindow.set_default_values')
     @patch(
         'HomeAssistantPlugin.actions.show_text.text_window.customization_helper')
-    def test_set_default_values(self, customization_helper_mock, super_set_default_values_mock):
+    def testset_default_values(self, customization_helper_mock, super_set_default_values_mock):
         instance = TextWindow.__new__(TextWindow)
 
         position1 = Mock()
@@ -122,7 +122,7 @@ class TestTextWindow(unittest.TestCase):
 
         customization_helper_mock.convert_color_list_to_rgba.side_effect = ["color1", "color2"]
 
-        instance._set_default_values()
+        instance.set_default_values()
 
         super_set_default_values_mock.assert_called_once_with()
         instance.position.set_selected.assert_called_once_with(1)
@@ -142,17 +142,17 @@ class TestTextWindow(unittest.TestCase):
         instance.show_line_break.set_active.assert_called_once_with(text_const.DEFAULT_UNIT_LINE_BREAK)
 
     @patch(
-        'HomeAssistantPlugin.actions.show_text.text_window.CustomizationWindow._set_current_values')
+        'HomeAssistantPlugin.actions.show_text.text_window.CustomizationWindow.set_current_values')
     def test_set_current_values_no_current(self, super_current_values_mock):
         instance = TextWindow.__new__(TextWindow)
         instance.current = None
 
-        instance._set_current_values()
+        instance.set_current_values()
 
         super_current_values_mock.assert_not_called()
 
     @patch(
-        'HomeAssistantPlugin.actions.show_text.text_window.CustomizationWindow._set_current_values')
+        'HomeAssistantPlugin.actions.show_text.text_window.CustomizationWindow.set_current_values')
     @patch(
         'HomeAssistantPlugin.actions.show_text.text_window.customization_helper')
     def test_set_current_values_success(self, customization_helper_mock, super_current_values_mock):
@@ -214,7 +214,7 @@ class TestTextWindow(unittest.TestCase):
 
         customization_helper_mock.convert_color_list_to_rgba.side_effect = ["color1", "color2"]
 
-        instance._set_current_values()
+        instance.set_current_values()
 
         super_current_values_mock.assert_called_once()
         instance.position.set_selected.assert_called_once_with(1)
@@ -480,7 +480,7 @@ class TestTextWindow(unittest.TestCase):
         instance.destroy.assert_called_once()
 
     @patch(
-        'HomeAssistantPlugin.actions.show_text.text_window.CustomizationWindow._on_widget_changed')
+        'HomeAssistantPlugin.actions.show_text.text_window.CustomizationWindow.on_widget_changed')
     def test_on_widget_changed(self, super_on_widget_changed_mock):
         instance = TextWindow.__new__(TextWindow)
         instance.check_position = Mock()
@@ -494,7 +494,7 @@ class TestTextWindow(unittest.TestCase):
         instance.check_show_unit = Mock()
         instance.check_line_break = Mock()
 
-        instance._on_widget_changed()
+        instance.on_widget_changed()
 
         super_on_widget_changed_mock.assert_called_once()
         instance.check_position.remove_css_class.assert_called_once_with(text_const.ERROR)

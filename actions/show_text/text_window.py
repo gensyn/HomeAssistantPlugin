@@ -3,15 +3,14 @@ The module for the Home Assistant customization text window.
 """
 
 from functools import partial
-from typing import Callable, List
-
-from gi.repository.Gtk import StringObject
+from typing import Callable
 
 from HomeAssistantPlugin.actions import const as base_const
 from HomeAssistantPlugin.actions.cores.customization_core import customization_helper
 from HomeAssistantPlugin.actions.cores.customization_core.customization_window import CustomizationWindow
 from HomeAssistantPlugin.actions.show_text import text_const
 from HomeAssistantPlugin.actions.show_text.text_customization import TextCustomization
+from gi.repository.Gtk import StringObject
 
 
 class TextWindow(CustomizationWindow):
@@ -19,7 +18,7 @@ class TextWindow(CustomizationWindow):
     Window to customize text.
     """
 
-    def __init__(self, lm, attributes: List, callback: Callable,
+    def __init__(self, lm, attributes: list, callback: Callable,
                  current: TextCustomization = None, index: int = None):
         # add text_length to attributes
         attributes.insert(0, text_const.CUSTOM_TEXT_LENGTH)
@@ -181,12 +180,12 @@ class TextWindow(CustomizationWindow):
 
         self._after_init()
 
-    def _on_change_attribute(self, *args, **kwargs) -> None:
+    def _on_change_attribute(self, *_, **__) -> None:
         custom_text_visible = self.attribute.get_selected_item().get_string() == text_const.CUSTOM_CUSTOM_TEXT
         self.custom_text.set_visible(custom_text_visible)
 
-    def _set_default_values(self) -> None:
-        super()._set_default_values()
+    def set_default_values(self) -> None:
+        super().set_default_values()
 
         for index, entry in enumerate(self.position.get_model()):
             if entry.get_string() == text_const.DEFAULT_POSITION:
@@ -219,11 +218,11 @@ class TextWindow(CustomizationWindow):
 
         self.show_line_break.set_active(text_const.DEFAULT_UNIT_LINE_BREAK)
 
-    def _set_current_values(self) -> None:
+    def set_current_values(self) -> None:
         if not self.current:
             return
 
-        super()._set_current_values()
+        super().set_current_values()
 
         for index, entry in enumerate(self.position.get_model()):
             if entry.get_string() == self.current.get_position():
@@ -282,7 +281,7 @@ class TextWindow(CustomizationWindow):
             self.current.get_line_break() or text_const.DEFAULT_UNIT_LINE_BREAK)
         self.check_line_break.set_active(self.current.get_line_break() is not None)
 
-    def on_add_button(self, *args, **kwargs) -> None:
+    def on_add_button(self, *_, **__) -> None:
         if not super().on_add_button():
             return
 
@@ -359,8 +358,8 @@ class TextWindow(CustomizationWindow):
 
         self.destroy()
 
-    def _on_widget_changed(self, *args, **kwargs):
-        super()._on_widget_changed()
+    def on_widget_changed(self, *_, **__):
+        super().on_widget_changed()
 
         self.check_position.remove_css_class(text_const.ERROR)
         self.position.remove_css_class(text_const.ERROR)

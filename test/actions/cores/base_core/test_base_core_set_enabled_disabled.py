@@ -14,7 +14,7 @@ from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore
 
 class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     def test_set_enabled_disabled_not_initialized(self, _, __):
         settings_mock = Mock()
@@ -29,13 +29,13 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
         instance.initialized = False
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         settings_mock.load.assert_not_called()
         settings_mock.get_domain.assert_not_called()
         entity_combo_mock.set_sensitive.assert_not_called()
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     def test_set_enabled_disabled_no_domain(self, _, __):
         settings_mock = Mock()
@@ -49,12 +49,12 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
         instance.initialized = True
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         settings_mock.get_domain.assert_called_once()
         entity_combo_mock.set_sensitive.assert_called_once_with(False)
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     def test_set_enabled_enabled_only_one_entity(self, _, __):
         settings_mock = Mock()
@@ -68,12 +68,12 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
         instance.initialized = True
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         settings_mock.get_domain.assert_called_once()
         entity_combo_mock.set_sensitive.assert_called_once_with(True)
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     def test_set_enabled_disabled_success(self, _, __):
         settings_mock = Mock()
@@ -87,7 +87,7 @@ class TestBaseCoreSetEnabledDisabled(unittest.TestCase):
         instance.settings = settings_mock
         instance.entity_combo = entity_combo_mock
         instance.initialized = True
-        instance._set_enabled_disabled()
+        instance.set_enabled_disabled()
 
         settings_mock.get_domain.assert_called_once()
         entity_combo_mock.set_sensitive.assert_called_once_with(True)

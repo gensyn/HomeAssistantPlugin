@@ -2,9 +2,8 @@
 
 import json
 from ssl import CERT_NONE, SSLEOFError
-from threading import Semaphore
 from time import sleep
-from typing import Any, Callable, Dict, Tuple
+from typing import Any, Callable
 
 from HomeAssistantPlugin.backend import backend_const
 from loguru import logger as log
@@ -33,7 +32,6 @@ class HomeAssistantWebsocket(WebSocketApp):
         self._on_event_message = on_event_message
         self._on_connected_callback = on_connected
         self._on_close_callback = on_close
-        self._websocket_semaphore = Semaphore(1)
         self.connected = False
         self._message_id: int = 0
 
@@ -42,11 +40,12 @@ class HomeAssistantWebsocket(WebSocketApp):
         ssl_opt = {}
         if not self._verify_certificate:
             ssl_opt[backend_const.CERT_REQS] = CERT_NONE
-        super().run_forever(sslopt=ssl_opt, reconnect=backend_const.RECONNECT_INTERVAL)
+        super().run_forever(sslopt=ssl_opt)
 
     def _auth(self) -> None:
         """Authenticated with Home Assistant."""
-        self.send({backend_const.FIELD_TYPE: backend_const.AUTH, backend_const.ACCESS_TOKEN: self._token}, check_connected=False)
+        self.send({backend_const.FIELD_TYPE: backend_const.AUTH, backend_const.ACCESS_TOKEN: self._token},
+                  check_connected=False)
         auth_ok = json.loads(self.sock.recv()).get(backend_const.FIELD_TYPE)
         if not auth_ok or auth_ok != backend_const.AUTH_OK:
             log.error(backend_const.AUTH_ERROR)
@@ -85,7 +84,7 @@ class HomeAssistantWebsocket(WebSocketApp):
             self._auth()
             return
 
-    def send(self, message: Dict, check_connected: bool = True) -> None:
+    def send(self, message: dict, check_connected: bool = True) -> None:
         """Convert the Dict to a string and send it to Home Assistant."""
         if check_connected and not self.connected:
             return
@@ -94,7 +93,7 @@ class HomeAssistantWebsocket(WebSocketApp):
 
     def send_and_recv(
             self, message: str, check_connected: bool = True
-    ) -> Tuple[bool, Any, Any]:
+    ) -> tuple[bool, Any, Any]:
         """Send a websocket message to Home Assistant and return the response."""
         if check_connected and not self.connected:
             return False, backend_const.EMPTY_STRING, backend_const.EMPTY_STRING
@@ -106,7 +105,7 @@ class HomeAssistantWebsocket(WebSocketApp):
         error = _get_field_from_message(response, backend_const.FIELD_ERROR)
         return success, result, error
 
-    def create_message(self, message_type: str) -> Dict[str, Any]:
+    def create_message(self, message_type: str) -> dict[str, Any]:
         """Create a message that can be sent to the Home Assistant websocket."""
         self._message_id += 1
         return {backend_const.ID: self._message_id, backend_const.FIELD_TYPE: message_type}

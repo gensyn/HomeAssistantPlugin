@@ -1,7 +1,8 @@
 """Module for the ParameterRow."""
-from typing import  Any
+from typing import Any
 
 import gi
+
 gi.require_version('Gtk', '4.0')
 from gi.repository.Gtk import CheckButton
 
@@ -10,6 +11,7 @@ from HomeAssistantPlugin import const as base_const
 
 class ParameterRow:
     """Row to display action call parameters with a check button."""
+
     def __init__(self, action_core, field_name: str, required: bool):
         self.action = action_core
         self.field_name = field_name
@@ -33,7 +35,6 @@ class ParameterRow:
         :return: the value
         """
         raise NotImplementedError()
-
 
     def set_value(self, value: Any) -> None:
         """

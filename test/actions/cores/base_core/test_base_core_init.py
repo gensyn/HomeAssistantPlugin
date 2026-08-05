@@ -14,7 +14,7 @@ from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore
 
 class TestBaseCoreInit(unittest.TestCase):
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
     def test_init_success(self, create_event_assigner_mock, create_ui_elements_mock):
         track_entity = True

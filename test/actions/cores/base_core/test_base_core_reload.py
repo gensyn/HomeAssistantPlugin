@@ -14,9 +14,9 @@ from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore
 
 class TestBaseCoreReload(unittest.TestCase):
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     @patch.object(BaseCore, "_create_event_assigner")
-    @patch.object(BaseCore, "_set_enabled_disabled")
+    @patch.object(BaseCore, "set_enabled_disabled")
     @patch.object(BaseCore, "refresh")
     def test_reload_success(self, refresh_mock, set_enabled_disabled_mock, _, __):
         settings_mock = Mock()

@@ -16,7 +16,7 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_entity')
+        'HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.on_change_entity')
     @patch(
         'HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     @patch.object(PerformAction, '_reload')
@@ -26,7 +26,7 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
 
         instance = PerformAction()
         instance.initialized = False
-        instance._on_change_entity(None, new_entity, old_entity)
+        instance.on_change_entity(None, new_entity, old_entity)
 
         on_change_entity_mock.assert_not_called()
         load_parameters_mock.assert_not_called()
@@ -34,7 +34,7 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_entity')
+        'HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.on_change_entity')
     @patch(
         'HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     @patch.object(PerformAction, '_reload')
@@ -44,7 +44,7 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
 
         instance = PerformAction()
         instance.initialized = True
-        instance._on_change_entity(None, new_entity, old_entity)
+        instance.on_change_entity(None, new_entity, old_entity)
 
         on_change_entity_mock.assert_not_called()
         load_parameters_mock.assert_not_called()
@@ -52,7 +52,7 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_entity')
+        'HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.on_change_entity')
     @patch(
         'HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     @patch.object(PerformAction, '_reload')
@@ -62,7 +62,7 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
 
         instance = PerformAction()
         instance.initialized = True
-        instance._on_change_entity(None, new_entity, old_entity)
+        instance.on_change_entity(None, new_entity, old_entity)
 
         on_change_entity_mock.assert_called_once()
         load_parameters_mock.assert_not_called()
@@ -70,7 +70,7 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_entity')
+        'HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.on_change_entity')
     @patch(
         'HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     @patch.object(PerformAction, '_reload')
@@ -80,7 +80,7 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
 
         instance = PerformAction()
         instance.initialized = True
-        instance._on_change_entity(None, new_entity, old_entity)
+        instance.on_change_entity(None, new_entity, old_entity)
 
         on_change_entity_mock.assert_called_once()
         load_parameters_mock.assert_not_called()
@@ -88,7 +88,7 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
     @patch(
-        'HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_change_entity')
+        'HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.on_change_entity')
     @patch(
         'HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.load_parameters')
     @patch.object(PerformAction, '_reload')
@@ -98,7 +98,7 @@ class TestPerformActionOnChangeDomain(unittest.TestCase):
 
         instance = PerformAction()
         instance.initialized = True
-        instance._on_change_entity(None, new_entity, old_entity)
+        instance.on_change_entity(None, new_entity, old_entity)
 
         on_change_entity_mock.assert_called_once()
         load_parameters_mock.assert_called_once_with(instance)

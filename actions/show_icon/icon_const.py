@@ -31,6 +31,11 @@ CUSTOM_ICON = "icon"
 CUSTOM_COLOR = "color"
 CUSTOM_SCALE = "scale"
 CUSTOM_OPACITY = "opacity"
+CUSTOM_IMAGE = "image"
+
+LABEL_ICON_IMAGE = "actions.home_assistant.icon.image.label"
+LABEL_ICON_BROWSE = "actions.home_assistant.icon.browse.label"
+LABEL_ICON_ONLY_SUPPORTED_FOR_ICONS = "actions.home_assistant.icon.only_supported_for_icons.label"
 
 MDI_SVG_JSON = "assets/mdi-svg.json"
 ICON_COLOR_RED = "#ff0000"

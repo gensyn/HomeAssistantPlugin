@@ -1,7 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 from unittest.mock import patch
 
 absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.absolute())
@@ -16,7 +16,8 @@ class TestBackendGetEntity(unittest.TestCase):
     @patch.object(HomeAssistantBackend, 'connect')
     @patch.object(HomeAssistantBackend, 'is_connected', return_value=True)
     def test_get_entity_no_id(self, is_connected_mock, _):
-        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
+        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True,
+                                        backend_const.EMPTY_STRING)
         result = instance.get_entity(backend_const.EMPTY_STRING)
 
         expected = {
@@ -31,7 +32,8 @@ class TestBackendGetEntity(unittest.TestCase):
     @patch.object(HomeAssistantBackend, 'connect')
     @patch.object(HomeAssistantBackend, 'is_connected', return_value=True)
     def test_get_entity_no_dot_in_id(self, is_connected_mock, _):
-        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
+        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True,
+                                        backend_const.EMPTY_STRING)
         result = instance.get_entity("domainentitiy")
 
         expected = {
@@ -46,7 +48,7 @@ class TestBackendGetEntity(unittest.TestCase):
     @patch.object(HomeAssistantBackend, 'connect')
     @patch.object(HomeAssistantBackend, 'is_connected', return_value=True)
     def test_get_entity_success(self, is_connected_mock, _):
-        entities: Dict[str, Dict[str, Any]] = {
+        entities: dict[str, dict[str, Any]] = {
             "domain1": {
                 "domain1.entity1": {
                     "keys": {
@@ -75,7 +77,8 @@ class TestBackendGetEntity(unittest.TestCase):
             }
         }
 
-        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
+        instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True,
+                                        backend_const.EMPTY_STRING)
         instance._entities = entities
         result = instance.get_entity("domain1.entity2")
 
@@ -84,4 +87,3 @@ class TestBackendGetEntity(unittest.TestCase):
 
         self.assertEqual(expected, result)
         self.assertEqual(2, is_connected_mock.call_count)
-

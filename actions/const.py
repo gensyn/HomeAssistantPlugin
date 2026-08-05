@@ -15,6 +15,7 @@ LABEL_CUSTOMIZATION = "actions.home_assistant.customization.label"
 LABEL_NO_ENTITY = "actions.home_assistant.customization.no_entity.label"
 
 SETTING_VERSION = "version"
+SETTING_VERSION_NUMBER = 1
 
 SETTING_ENTITY = "entity"
 SETTING_DOMAIN = "domain"

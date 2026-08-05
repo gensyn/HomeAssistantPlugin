@@ -16,7 +16,9 @@ ABSOLUTE_PLUGIN_PATH = str(Path(__file__).parent.parent.absolute())
 sys.path.insert(0, ABSOLUTE_PLUGIN_PATH)
 
 from src.backend.PluginManager.ActionHolder import ActionHolder
+from src.backend.PluginManager.ActionInputSupport import ActionInputSupport
 from src.backend.PluginManager.PluginBase import PluginBase
+from src.backend.DeckManagement.InputIdentifier import Input
 
 from HomeAssistantPlugin import const
 from HomeAssistantPlugin.actions.show_icon.icon_const import SHOW_ICON
@@ -25,6 +27,8 @@ from HomeAssistantPlugin.actions.show_text.text_const import SHOW_TEXT
 from HomeAssistantPlugin.actions.show_text.text_action import ShowText
 from HomeAssistantPlugin.actions.perform_action.perform_const import PERFORM_ACTION
 from HomeAssistantPlugin.actions.perform_action.perform_action import PerformAction
+from HomeAssistantPlugin.actions.level_dial.level_const import LEVEL_DIAL
+from HomeAssistantPlugin.actions.level_dial.level_dial import LevelDial
 from HomeAssistantPlugin.backend import backend_const
 
 from HomeAssistantPlugin.backend.home_assistant_backend import HomeAssistantBackend
@@ -48,31 +52,59 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
             plugin_base=self,
             action_base=PerformAction,
             action_id="HomeAssistantPlugin::PerformAction",
-            action_name=PERFORM_ACTION
+            action_name=PERFORM_ACTION,
+            action_support={
+                Input.Key: ActionInputSupport.SUPPORTED,
+                Input.Dial: ActionInputSupport.SUPPORTED,
+                Input.Touchscreen: ActionInputSupport.UNSUPPORTED
+            }
         )
 
         self.show_icon_action_holder = ActionHolder(
             plugin_base=self,
             action_base=ShowIcon,
             action_id="HomeAssistantPlugin::ShowIcon",
-            action_name=SHOW_ICON
+            action_name=SHOW_ICON,
+            action_support={
+                Input.Key: ActionInputSupport.SUPPORTED,
+                Input.Dial: ActionInputSupport.SUPPORTED,
+                Input.Touchscreen: ActionInputSupport.UNSUPPORTED
+            }
         )
 
         self.show_text_action_holder = ActionHolder(
             plugin_base=self,
             action_base=ShowText,
             action_id="HomeAssistantPlugin::ShowText",
-            action_name=SHOW_TEXT
+            action_name=SHOW_TEXT,
+            action_support={
+                Input.Key: ActionInputSupport.SUPPORTED,
+                Input.Dial: ActionInputSupport.SUPPORTED,
+                Input.Touchscreen: ActionInputSupport.UNSUPPORTED
+            }
+        )
+
+        self.level_dial_action_holder = ActionHolder(
+            plugin_base=self,
+            action_base=LevelDial,
+            action_id="HomeAssistantPlugin::LevelDial",
+            action_name=LEVEL_DIAL,
+            action_support={
+                Input.Key: ActionInputSupport.UNSUPPORTED,
+                Input.Dial: ActionInputSupport.SUPPORTED,
+                Input.Touchscreen: ActionInputSupport.UNSUPPORTED
+            }
         )
 
         self.add_action_holder(self.perform_action_action_holder)
         self.add_action_holder(self.show_icon_action_holder)
         self.add_action_holder(self.show_text_action_holder)
+        self.add_action_holder(self.level_dial_action_holder)
 
         self.register(
             plugin_name=const.HOME_ASSISTANT,
             github_repo="https://github.com/gensyn/HomeAssistantPlugin",
-            plugin_version="1.0.2",
+            plugin_version="1.1.1",
             app_version="1.5.0-beta"
         )
 

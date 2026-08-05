@@ -1,7 +1,6 @@
 import sys
 import unittest
 from pathlib import Path
-from typing import Dict
 from unittest.mock import Mock, patch, call
 
 absolute_mock_path = str(Path(__file__).parent.parent.parent.parent / "stream_controller_mock")
@@ -9,7 +8,6 @@ sys.path.insert(0, absolute_mock_path)
 
 absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.parent.parent.absolute())
 sys.path.insert(0, absolute_plugin_path)
-
 
 from HomeAssistantPlugin import const as base_const
 from HomeAssistantPlugin.actions.perform_action.parameters.parameter_entry_row import ParameterRow
@@ -62,7 +60,6 @@ class TestParameterEntryRow(unittest.TestCase):
         instance.check.set_sensitive.assert_called_once_with(False)
         instance.check.connect.assert_called_once_with(base_const.CONNECT_TOGGLED, instance._on_change)
 
-
     def test_get_parameter_value(self):
         required = False
         instance = create_instance(required)
@@ -98,7 +95,9 @@ class TestParameterEntryRow(unittest.TestCase):
         instance.action.settings.remove_parameter.assert_called_once_with(instance.field_name)
 
 
-def create_instance(required: bool, parameters: Dict={}, field_name: str="test_field") -> ParameterRow:
+def create_instance(required: bool, parameters=None, field_name: str = "test_field") -> ParameterRow:
+    if parameters is None:
+        parameters = {}
     action_core_mock = Mock()
     action_core_mock.settings = Mock()
     action_core_mock.settings.get_parameters = Mock(return_value=parameters)
@@ -112,4 +111,3 @@ def create_instance(required: bool, parameters: Dict={}, field_name: str="test_f
         check_button_mock.set_sensitive = Mock()
         check_button_mock.connect = Mock()
         return ParameterRow(action_core_mock, field_name, required)
-

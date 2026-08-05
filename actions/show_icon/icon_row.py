@@ -1,8 +1,6 @@
 """
 The module for the Home Assistant customization row.
 """
-from typing import List, Dict
-
 from HomeAssistantPlugin.actions.cores.customization_core import customization_helper
 from HomeAssistantPlugin.actions.cores.customization_core.customization_row import CustomizationRow
 from HomeAssistantPlugin.actions.cores.customization_core.customization_settings import CustomizationSettings
@@ -15,8 +13,8 @@ class IconRow(CustomizationRow):
     Base for customization icon rows
     """
 
-    def __init__(self, lm, customization: IconCustomization, customization_count: int, index: int, attributes: List,
-                 state: Dict, settings: CustomizationSettings):
+    def __init__(self, lm, customization: IconCustomization, customization_count: int, index: int, attributes: list,
+                 state: dict, settings: CustomizationSettings):
         super().__init__(lm, customization_count, index, attributes, state, settings)
 
         current_value = icon_helper.get_value(state, customization)

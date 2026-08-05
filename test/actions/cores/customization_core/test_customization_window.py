@@ -199,7 +199,7 @@ class TestCustomizationWindow(unittest.TestCase):
 
     def test_on_widget_changed_removes_error(self):
         window = self.get_window()
-        window._on_widget_changed(None)
+        window.on_widget_changed(None)
         window.condition_attribute.remove_css_class.assert_called_with(self.mock_customization_const.ERROR)
         window.operator.remove_css_class.assert_called_with(self.mock_customization_const.ERROR)
         window.entry_value.remove_css_class.assert_called_with(self.mock_customization_const.ERROR)
@@ -208,7 +208,7 @@ class TestCustomizationWindow(unittest.TestCase):
         window = self.get_window()
         window.condition_attribute.set_selected = MagicMock()
         window.operator.set_selected = MagicMock()
-        window._set_default_values()
+        window.set_default_values()
         window.condition_attribute.set_selected.assert_called_with(0)
         window.operator.set_selected.assert_called_with(0)
 
@@ -219,12 +219,12 @@ class TestCustomizationWindow(unittest.TestCase):
         window.entry_value.set_text = MagicMock()
         window.condition_attribute.get_model.return_value = [["attr1"], ["attr2"], ["attr3"]]
         window.operator.get_model.return_value = [["attr1"], ["attr2"], ["attr3"]]
-        window._set_current_values()
+        window.set_current_values()
         window.condition_attribute.set_active.assert_not_called()
         window.operator.set_active.assert_not_called()
         window.entry_value.set_text.assert_not_called()
 
-    def test_set_current_values(self):
+    def testset_current_values(self):
         attr1_mock = MagicMock()
         attr1_mock.get_string.return_value = "attr1"
         attr1_mock.value = "attr1"
@@ -244,7 +244,7 @@ class TestCustomizationWindow(unittest.TestCase):
         window.entry_value.set_text = MagicMock()
         window.condition_attribute.get_model.return_value = [attr1_mock, attr2_mock, attr3_mock]
         window.operator.get_model.return_value = [attr1_mock, attr2_mock, attr3_mock]
-        window._set_current_values()
+        window.set_current_values()
         window.condition_attribute.set_selected.assert_called_with(1)
         window.operator.set_selected.assert_called_with(2)
         window.entry_value.set_text.assert_called_with("55")
@@ -406,14 +406,14 @@ class TestCustomizationWindow(unittest.TestCase):
         entry.set_text.assert_called_with('5')
 
     def test_after_init_calls_all_methods(self):
-        """Test _after_init calls _set_default_values, _set_current_values, _connect_rows."""
+        """Test _after_init calls set_default_values, set_current_values, _connect_rows."""
         window = self.get_window()
         # Patch the called methods to monitor calls
-        window._set_default_values = MagicMock()
-        window._set_current_values = MagicMock()
+        window.set_default_values = MagicMock()
+        window.set_current_values = MagicMock()
         window._connect_rows = MagicMock()
         window.current = MagicMock()
         window._after_init()
-        window._set_default_values.assert_called_once()
-        window._set_current_values.assert_called_once()
+        window.set_default_values.assert_called_once()
+        window.set_current_values.assert_called_once()
         window._connect_rows.assert_called_once()

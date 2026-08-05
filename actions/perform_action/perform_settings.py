@@ -1,9 +1,7 @@
 """Module to manage action settings."""
 
-from typing import Dict
-
-from HomeAssistantPlugin.actions.perform_action import perform_const
 from HomeAssistantPlugin.actions.cores.base_core.base_settings import BaseSettings
+from HomeAssistantPlugin.actions.perform_action import perform_const
 
 DEFAULT_SETTINGS = {
     perform_const.SETTING_ACTION: perform_const.EMPTY_STRING,
@@ -43,7 +41,7 @@ class PerformActionSettings(BaseSettings):
         """
         return self._get_perform_settings().get(perform_const.SETTING_ACTION, perform_const.EMPTY_STRING)
 
-    def get_parameters(self) -> Dict:
+    def get_parameters(self) -> dict:
         """
         Retrieve all action parameters.
         :return: all action parameters

@@ -1,6 +1,4 @@
 """Module for the ParameterComboRow."""
-from typing import List
-
 from GtkHelper.ComboRow import BaseComboRowItem
 from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from HomeAssistantPlugin.actions.perform_action.parameters.parameter_row import ParameterRow
@@ -9,7 +7,7 @@ from HomeAssistantPlugin.actions.perform_action.parameters.parameter_row import 
 class ParameterComboRow(ParameterRow, ComboRow):
     """ComboRow to display action call parameters with a check button."""
 
-    def __init__(self, action_core, var_name: str, field_name: str, default_value: str, items: List, required: bool):
+    def __init__(self, action_core, var_name: str, field_name: str, default_value: str, items: list, required: bool):
         ComboRow.__init__(self, action_core, var_name, default_value, items, title=field_name,
                           can_reset=False, complex_var_name=True)
         ParameterRow.__init__(self, action_core, field_name, required)

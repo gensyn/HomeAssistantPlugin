@@ -3,6 +3,7 @@
 from HomeAssistantPlugin.actions import const
 
 DEFAULT_SETTINGS = {
+    const.SETTING_VERSION: const.SETTING_VERSION_NUMBER,
     const.SETTING_DOMAIN: const.EMPTY_STRING,
     const.SETTING_ENTITY: const.EMPTY_STRING
 }

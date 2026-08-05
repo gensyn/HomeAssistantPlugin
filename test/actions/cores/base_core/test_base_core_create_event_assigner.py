@@ -14,7 +14,7 @@ from HomeAssistantPlugin.actions.cores.base_core.base_core import BaseCore
 
 class TestBaseCoreCreateEventAssigner(unittest.TestCase):
 
-    @patch.object(BaseCore, "_create_ui_elements")
+    @patch.object(BaseCore, "create_ui_elements")
     def test_create_event_assigner_success(self, _):
         # This test checks if the _create_event_assigner method can be called without errors
         with patch.object(BaseCore, "_create_event_assigner"):

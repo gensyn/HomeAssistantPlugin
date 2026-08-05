@@ -5,30 +5,33 @@ Module for icon related operations.
 import json
 import logging
 import os
-from typing import Dict, List
 
 from HomeAssistantPlugin.actions.cores.customization_core import customization_helper
-from HomeAssistantPlugin.actions.show_icon.icon_customization import IconCustomization
 from HomeAssistantPlugin.actions.show_icon import icon_const
+from HomeAssistantPlugin.actions.show_icon.icon_customization import IconCustomization
 from HomeAssistantPlugin.actions.show_icon.icon_settings import ShowIconSettings
 
 MDI_FILENAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..",
                             icon_const.MDI_SVG_JSON)
 
 with open(MDI_FILENAME, "r", encoding="utf-8") as f:
-    MDI_ICONS: Dict[str, str] = json.loads(f.read())
+    MDI_ICONS: dict[str, str] = json.loads(f.read())
 
 
-def get_icon(state: Dict, settings: ShowIconSettings, is_connected: bool) -> (str, float):
+def get_icon(state: dict, settings: ShowIconSettings, is_connected: bool) -> tuple[str, float]:
     """
     Get the item corresponding to the given state.
     """
     if not is_connected:
         return (_get_icon_svg(icon_const.ICON_NETWORK_OFF).replace("<color>",
-                                                              icon_const.ICON_COLOR_RED).replace(
+                                                                   icon_const.ICON_COLOR_RED).replace(
             "<opacity>", "1.0")), round(icon_const.DEFAULT_ICON_SCALE / 100, 2)
 
     name, color, scale, opacity = _get_icon_settings(state, settings)
+
+    if name not in MDI_ICONS:
+        # color and opacity only have an effect on icons
+        return name, scale
 
     # convert RGB color to hex
     color = customization_helper.convert_color_list_to_hex(color)
@@ -38,21 +41,18 @@ def get_icon(state: Dict, settings: ShowIconSettings, is_connected: bool) -> (st
     return (icon.replace("<color>", color).replace("<opacity>", str(opacity))), scale
 
 
-def _get_icon_settings(state: Dict, settings: ShowIconSettings) -> (str, str, str, str):
+def _get_icon_settings(state: dict, settings: ShowIconSettings) -> tuple[str, str, float, float]:
     # default value for the icon is the icon set in HA
-    name = state.get(icon_const.ATTRIBUTES, {}).get(icon_const.ATTRIBUTE_ICON, icon_const.EMPTY_STRING)
+    name = settings.get_icon() or state.get(icon_const.ATTRIBUTES, {}).get(icon_const.ATTRIBUTE_ICON, icon_const.EMPTY_STRING).replace("mdi:", icon_const.EMPTY_STRING)
     color = settings.get_color()
     scale = settings.get_scale()
     opacity = settings.get_opacity()
-
-    if settings.get_icon() in MDI_ICONS.keys():
-        name = settings.get_icon()
 
     #
     # Begin custom icon
     #
 
-    customizations: List[IconCustomization] = settings.get_customizations()
+    customizations: list[IconCustomization] = settings.get_customizations()
 
     for customization in customizations:
         value = get_value(state, customization)
@@ -89,8 +89,7 @@ def _get_icon_settings(state: Dict, settings: ShowIconSettings) -> (str, str, st
                 or (operator == "<=" and value <= custom_icon_value)
                 or (operator == ">" and value > custom_icon_value)
                 or (operator == ">=" and value >= custom_icon_value)):
-            name, color, scale, opacity = _replace_values(name, color, scale, opacity,
-                                                          customization)
+            name, color, scale, opacity = _replace_values(name, color, scale, opacity, customization)
 
     #
     # End custom icon
@@ -101,7 +100,7 @@ def _get_icon_settings(state: Dict, settings: ShowIconSettings) -> (str, str, st
     return name, color, scale, opacity
 
 
-def get_value(state: Dict, customization: IconCustomization):
+def get_value(state: dict, customization: IconCustomization):
     """
     Gets the current value that the customization references.
     """
