@@ -26,23 +26,36 @@ class LevelDialSettings(CustomizationSettings):
             settings[level_const.SETTING_LEVEL] = copy.deepcopy(DEFAULT_SETTINGS)
             self._action.set_settings(settings)
 
+    def _get_level_settings(self) -> dict:
+        settings = self._action.get_settings()
+        if not isinstance(settings, dict):
+            return copy.deepcopy(DEFAULT_SETTINGS)
+        level_settings = settings.get(level_const.SETTING_LEVEL)
+        if not isinstance(level_settings, dict):
+            level_settings = copy.deepcopy(DEFAULT_SETTINGS)
+            settings[level_const.SETTING_LEVEL] = level_settings
+            self._action.set_settings(settings)
+        return level_settings
+
     def get_step(self) -> int:
-        return self._action.get_settings()[level_const.SETTING_LEVEL][level_const.SETTING_STEP]
+        return int(self._get_level_settings().get(level_const.SETTING_STEP, level_const.DEFAULT_STEP))
 
     def get_label(self) -> str:
-        return self._action.get_settings()[level_const.SETTING_LEVEL].get(
-            level_const.SETTING_LABEL, level_const.DEFAULT_LABEL
-        )
+        return str(self._get_level_settings().get(level_const.SETTING_LABEL, level_const.DEFAULT_LABEL))
 
     def get_batch_delay(self) -> int:
-        return self._action.get_settings()[level_const.SETTING_LEVEL].get(
-            level_const.SETTING_BATCH_DELAY, level_const.DEFAULT_BATCH_DELAY
-        )
+        return int(self._get_level_settings().get(level_const.SETTING_BATCH_DELAY, level_const.DEFAULT_BATCH_DELAY))
 
     def reset(self, domain: str) -> None:
         super().reset(domain)
         settings = self._action.get_settings()
-        settings[level_const.SETTING_LEVEL][level_const.SETTING_STEP] = level_const.DEFAULT_STEP
-        settings[level_const.SETTING_LEVEL][level_const.SETTING_LABEL] = level_const.DEFAULT_LABEL
-        settings[level_const.SETTING_LEVEL][level_const.SETTING_BATCH_DELAY] = level_const.DEFAULT_BATCH_DELAY
+        if not isinstance(settings, dict):
+            settings = {}
+        level_settings = settings.get(level_const.SETTING_LEVEL)
+        if not isinstance(level_settings, dict):
+            level_settings = copy.deepcopy(DEFAULT_SETTINGS)
+            settings[level_const.SETTING_LEVEL] = level_settings
+        level_settings[level_const.SETTING_STEP] = level_const.DEFAULT_STEP
+        level_settings[level_const.SETTING_LABEL] = level_const.DEFAULT_LABEL
+        level_settings[level_const.SETTING_BATCH_DELAY] = level_const.DEFAULT_BATCH_DELAY
         self._action.set_settings(settings)
