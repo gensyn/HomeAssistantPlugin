@@ -22,19 +22,30 @@ class BaseSettings:
             settings[const.SETTING_ENTITY] = DEFAULT_SETTINGS.copy()
             self._action.set_settings(settings)
 
+    def _get_entity_settings(self) -> dict:
+        settings = self._action.get_settings()
+        if not isinstance(settings, dict):
+            return DEFAULT_SETTINGS.copy()
+        entity_settings = settings.get(const.SETTING_ENTITY)
+        if not isinstance(entity_settings, dict):
+            entity_settings = DEFAULT_SETTINGS.copy()
+            settings[const.SETTING_ENTITY] = entity_settings
+            self._action.set_settings(settings)
+        return entity_settings
+
     def get_domain(self) -> str:
         """
         Get the domain.
         :return: the domain
         """
-        return self._action.get_settings()[const.SETTING_ENTITY][const.SETTING_DOMAIN]
+        return self._get_entity_settings().get(const.SETTING_DOMAIN, const.EMPTY_STRING)
 
     def get_entity(self) -> str:
         """
         Get the entity.
         :return: the entity
         """
-        return self._action.get_settings()[const.SETTING_ENTITY][const.SETTING_ENTITY]
+        return self._get_entity_settings().get(const.SETTING_ENTITY, const.EMPTY_STRING)
 
     def reset(self, domain: str) -> None:
         """
@@ -42,6 +53,10 @@ class BaseSettings:
         :param domain: the new domain
         """
         settings = self._action.get_settings()
+        if not isinstance(settings, dict):
+            settings = {}
+        if not isinstance(settings.get(const.SETTING_ENTITY), dict):
+            settings[const.SETTING_ENTITY] = DEFAULT_SETTINGS.copy()
         settings[const.SETTING_ENTITY][const.SETTING_DOMAIN] = domain
         settings[const.SETTING_ENTITY][const.SETTING_ENTITY] = const.EMPTY_STRING
         self._action.set_settings(settings)

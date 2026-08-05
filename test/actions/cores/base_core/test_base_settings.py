@@ -71,3 +71,15 @@ class TestBaseSettingsInit(unittest.TestCase):
 
         action_mock.set_settings.assert_called_once_with(settings_expected_for_reset)
 
+    def test_missing_entity_key(self):
+        settings = {}
+        action_mock = Mock()
+        action_mock.get_settings.return_value = settings
+
+        instance = BaseSettings(action_mock)
+        # Clear settings to simulate runtime loss of entity key
+        action_mock.get_settings.return_value = {}
+
+        self.assertEqual(const.EMPTY_STRING, instance.get_entity())
+        self.assertEqual(const.EMPTY_STRING, instance.get_domain())
+
