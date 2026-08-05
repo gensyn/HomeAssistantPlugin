@@ -41,14 +41,10 @@ class CustomizationSettings(BaseSettings):
         :return:
         """
         settings = self._action.get_settings()
-        if not isinstance(settings, dict):
-            settings = {}
-        customization_section = settings.setdefault(self.customization_name, {})
-        customizations = customization_section.setdefault(customization_const.SETTING_CUSTOMIZATIONS, [])
-        if 0 <= index < len(customizations):
-            customization = customizations.pop(index)
-            customizations.insert(index + offset, customization)
-            self._action.set_settings(settings)
+        customization = settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].pop(index)
+        settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].insert(index + offset,
+                                                                                             customization)
+        self._action.set_settings(settings)
 
     def remove_customization(self, index: int) -> None:
         """
@@ -57,13 +53,8 @@ class CustomizationSettings(BaseSettings):
         :return:
         """
         settings = self._action.get_settings()
-        if not isinstance(settings, dict):
-            settings = {}
-        customization_section = settings.setdefault(self.customization_name, {})
-        customizations = customization_section.setdefault(customization_const.SETTING_CUSTOMIZATIONS, [])
-        if 0 <= index < len(customizations):
-            customizations.pop(index)
-            self._action.set_settings(settings)
+        settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].pop(index)
+        self._action.set_settings(settings)
 
     def replace_customization(self, index: int, customization: Customization) -> None:
         """
@@ -73,13 +64,8 @@ class CustomizationSettings(BaseSettings):
         :return:
         """
         settings = self._action.get_settings()
-        if not isinstance(settings, dict):
-            settings = {}
-        customization_section = settings.setdefault(self.customization_name, {})
-        customizations = customization_section.setdefault(customization_const.SETTING_CUSTOMIZATIONS, [])
-        if 0 <= index < len(customizations):
-            customizations[index] = customization.export()
-            self._action.set_settings(settings)
+        settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS][index] = customization.export()
+        self._action.set_settings(settings)
 
     def add_customization(self, customization: Customization) -> None:
         """
@@ -87,9 +73,5 @@ class CustomizationSettings(BaseSettings):
         :param customization: the new customization
         """
         settings = self._action.get_settings()
-        if not isinstance(settings, dict):
-            settings = {}
-        customization_section = settings.setdefault(self.customization_name, {})
-        customizations = customization_section.setdefault(customization_const.SETTING_CUSTOMIZATIONS, [])
-        customizations.append(customization.export())
+        settings[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS].append(customization.export())
         self._action.set_settings(settings)

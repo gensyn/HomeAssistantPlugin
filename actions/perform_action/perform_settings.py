@@ -1,5 +1,7 @@
 """Module to manage action settings."""
 
+from copy import deepcopy
+
 from HomeAssistantPlugin.actions.cores.base_core.base_settings import BaseSettings
 from HomeAssistantPlugin.actions.perform_action import perform_const
 
@@ -20,16 +22,16 @@ class PerformActionSettings(BaseSettings):
 
         if not self._action.get_settings().get(perform_const.SETTING_ACTION):
             settings = self._action.get_settings()
-            settings[perform_const.SETTING_ACTION] = DEFAULT_SETTINGS.copy()
+            settings[perform_const.SETTING_ACTION] = deepcopy(DEFAULT_SETTINGS)
             self._action.set_settings(settings)
 
     def _get_perform_settings(self) -> dict:
         settings = self._action.get_settings()
         if not isinstance(settings, dict):
-            return DEFAULT_SETTINGS.copy()
+            return deepcopy(DEFAULT_SETTINGS)
         perform_settings = settings.get(perform_const.SETTING_ACTION)
         if not isinstance(perform_settings, dict):
-            perform_settings = DEFAULT_SETTINGS.copy()
+            perform_settings = deepcopy(DEFAULT_SETTINGS)
             settings[perform_const.SETTING_ACTION] = perform_settings
             self._action.set_settings(settings)
         return perform_settings
@@ -55,11 +57,7 @@ class PerformActionSettings(BaseSettings):
         :param value: the value for the field
         """
         settings = self._action.get_settings()
-        if not isinstance(settings, dict):
-            settings = {}
-        perform_settings = settings.setdefault(perform_const.SETTING_ACTION, DEFAULT_SETTINGS.copy())
-        parameters = perform_settings.setdefault(perform_const.ACTION_PARAMETERS, {})
-        parameters[field] = value
+        settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS][field] = value
         self._action.set_settings(settings)
 
     def remove_parameter(self, field) -> None:
@@ -68,20 +66,13 @@ class PerformActionSettings(BaseSettings):
         :param field: the field to remove
         """
         settings = self._action.get_settings()
-        if not isinstance(settings, dict):
-            settings = {}
-        perform_settings = settings.setdefault(perform_const.SETTING_ACTION, DEFAULT_SETTINGS.copy())
-        parameters = perform_settings.setdefault(perform_const.ACTION_PARAMETERS, {})
-        parameters.pop(field, None)
+        settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS].pop(field)
         self._action.set_settings(settings)
 
     def clear_parameters(self) -> None:
         """Clear all action parameters."""
         settings = self._action.get_settings()
-        if not isinstance(settings, dict):
-            settings = {}
-        perform_settings = settings.setdefault(perform_const.SETTING_ACTION, DEFAULT_SETTINGS.copy())
-        perform_settings[perform_const.ACTION_PARAMETERS] = {}
+        settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS] = {}
         self._action.set_settings(settings)
 
     def reset(self, domain: str) -> None:
@@ -91,9 +82,6 @@ class PerformActionSettings(BaseSettings):
         """
         super().reset(domain)
         settings = self._action.get_settings()
-        if not isinstance(settings, dict):
-            settings = {}
-        perform_settings = settings.setdefault(perform_const.SETTING_ACTION, DEFAULT_SETTINGS.copy())
-        perform_settings[perform_const.SETTING_ACTION] = perform_const.EMPTY_STRING
-        perform_settings[perform_const.ACTION_PARAMETERS] = {}
+        settings[perform_const.SETTING_ACTION][perform_const.SETTING_ACTION] = perform_const.EMPTY_STRING
+        settings[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS] = {}
         self._action.set_settings(settings)

@@ -77,9 +77,25 @@ class TestBaseSettingsInit(unittest.TestCase):
         action_mock.get_settings.return_value = settings
 
         instance = BaseSettings(action_mock)
-        # Clear settings to simulate runtime loss of entity key
-        action_mock.get_settings.return_value = {}
+        action_mock.reset_mock()
 
+        # Clear settings to simulate runtime loss of entity key
+        current_settings = {}
+        action_mock.get_settings.return_value = current_settings
+
+        self.assertEqual(const.EMPTY_STRING, instance.get_entity())
+        self.assertEqual(const.EMPTY_STRING, instance.get_domain())
+
+        # Verify set_settings was called to persist self-healing defaults
+        action_mock.set_settings.assert_called_with({
+            const.SETTING_ENTITY: deepcopy(DEFAULT_SETTINGS)
+        })
+
+    def test_corrupted_non_dict_settings(self):
+        action_mock = Mock()
+        action_mock.get_settings.return_value = {"entity": "corrupted_string"}
+
+        instance = BaseSettings(action_mock)
         self.assertEqual(const.EMPTY_STRING, instance.get_entity())
         self.assertEqual(const.EMPTY_STRING, instance.get_domain())
 

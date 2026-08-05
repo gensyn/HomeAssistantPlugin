@@ -1,5 +1,6 @@
 """Module to manage HomeAssistantPlugin action settings."""
 
+from copy import deepcopy
 from HomeAssistantPlugin.actions import const
 
 DEFAULT_SETTINGS = {
@@ -20,16 +21,16 @@ class BaseSettings:
 
         if not self._action.get_settings().get(const.SETTING_ENTITY):
             settings = self._action.get_settings()
-            settings[const.SETTING_ENTITY] = DEFAULT_SETTINGS.copy()
+            settings[const.SETTING_ENTITY] = deepcopy(DEFAULT_SETTINGS)
             self._action.set_settings(settings)
 
     def _get_entity_settings(self) -> dict:
         settings = self._action.get_settings()
         if not isinstance(settings, dict):
-            return DEFAULT_SETTINGS.copy()
+            return deepcopy(DEFAULT_SETTINGS)
         entity_settings = settings.get(const.SETTING_ENTITY)
         if not isinstance(entity_settings, dict):
-            entity_settings = DEFAULT_SETTINGS.copy()
+            entity_settings = deepcopy(DEFAULT_SETTINGS)
             settings[const.SETTING_ENTITY] = entity_settings
             self._action.set_settings(settings)
         return entity_settings
@@ -57,7 +58,7 @@ class BaseSettings:
         if not isinstance(settings, dict):
             settings = {}
         if not isinstance(settings.get(const.SETTING_ENTITY), dict):
-            settings[const.SETTING_ENTITY] = DEFAULT_SETTINGS.copy()
+            settings[const.SETTING_ENTITY] = deepcopy(DEFAULT_SETTINGS)
         settings[const.SETTING_ENTITY][const.SETTING_DOMAIN] = domain
         settings[const.SETTING_ENTITY][const.SETTING_ENTITY] = const.EMPTY_STRING
         self._action.set_settings(settings)
