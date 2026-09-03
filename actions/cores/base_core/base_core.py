@@ -112,7 +112,9 @@ class BaseCore(ActionCore):
         domain = str(domain) if domain is not None else None
         old_domain = str(old_domain) if old_domain is not None else None
 
-        if old_domain != domain:
+        current_domain = self.settings.get_domain() if self.settings else None
+
+        if old_domain != domain and not (old_domain is None and current_domain and domain == current_domain):
             entity = self.settings.get_entity()
             if entity and self.track_entity:
                 self.plugin_base.backend.remove_tracked_entity(entity, self.refresh)
