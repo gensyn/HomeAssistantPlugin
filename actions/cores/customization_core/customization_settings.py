@@ -17,9 +17,21 @@ class CustomizationSettings(BaseSettings):
         self.customization_name = customization_name
         self.customization_implementation = customization_implementation
 
+    def _get_customization_settings(self) -> dict:
+        settings = self._action.get_settings()
+        if not isinstance(settings, dict):
+            return {customization_const.SETTING_CUSTOMIZATIONS: []}
+        customization_section = settings.get(self.customization_name)
+        if not isinstance(customization_section, dict):
+            customization_section = {customization_const.SETTING_CUSTOMIZATIONS: []}
+            settings[self.customization_name] = customization_section
+            self._action.set_settings(settings)
+        return customization_section
+
     def get_customizations(self):
-        return [self.customization_implementation.from_dict(c) for c in
-                self._action.get_settings()[self.customization_name][customization_const.SETTING_CUSTOMIZATIONS]]
+        customization_section = self._get_customization_settings()
+        customizations = customization_section.get(customization_const.SETTING_CUSTOMIZATIONS, [])
+        return [self.customization_implementation.from_dict(c) for c in customizations]
 
     def move_customization(self, index: int, offset: int):
         """

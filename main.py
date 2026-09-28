@@ -104,7 +104,7 @@ class HomeAssistant(PluginBase):  # pylint: disable=too-few-public-methods
         self.register(
             plugin_name=const.HOME_ASSISTANT,
             github_repo="https://github.com/gensyn/HomeAssistantPlugin",
-            plugin_version="1.1.1",
+            plugin_version="1.2.1",
             app_version="1.5.0-beta"
         )
 

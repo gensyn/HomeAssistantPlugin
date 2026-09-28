@@ -1,5 +1,7 @@
 """Module to manage action settings."""
 
+from copy import deepcopy
+
 from HomeAssistantPlugin.actions.cores.base_core.base_settings import BaseSettings
 from HomeAssistantPlugin.actions.perform_action import perform_const
 
@@ -20,22 +22,33 @@ class PerformActionSettings(BaseSettings):
 
         if not self._action.get_settings().get(perform_const.SETTING_ACTION):
             settings = self._action.get_settings()
-            settings[perform_const.SETTING_ACTION] = DEFAULT_SETTINGS.copy()
+            settings[perform_const.SETTING_ACTION] = deepcopy(DEFAULT_SETTINGS)
             self._action.set_settings(settings)
+
+    def _get_perform_settings(self) -> dict:
+        settings = self._action.get_settings()
+        if not isinstance(settings, dict):
+            return deepcopy(DEFAULT_SETTINGS)
+        perform_settings = settings.get(perform_const.SETTING_ACTION)
+        if not isinstance(perform_settings, dict):
+            perform_settings = deepcopy(DEFAULT_SETTINGS)
+            settings[perform_const.SETTING_ACTION] = perform_settings
+            self._action.set_settings(settings)
+        return perform_settings
 
     def get_action(self) -> str:
         """
         Get the action.
         :return: the action
         """
-        return self._action.get_settings()[perform_const.SETTING_ACTION][perform_const.SETTING_ACTION]
+        return self._get_perform_settings().get(perform_const.SETTING_ACTION, perform_const.EMPTY_STRING)
 
     def get_parameters(self) -> dict:
         """
         Retrieve all action parameters.
         :return: all action parameters
         """
-        return self._action.get_settings()[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS]
+        return self._get_perform_settings().get(perform_const.ACTION_PARAMETERS, {})
 
     def set_parameter(self, field, value) -> None:
         """
