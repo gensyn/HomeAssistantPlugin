@@ -49,6 +49,29 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
     @patch.object(BaseCore, "_create_event_assigner")
     @patch.object(BaseCore, "_load_entities")
     @patch.object(BaseCore, "set_enabled_disabled")
+    def test_on_change_domain_matches_current_domain(self, set_enabled_disabled_mock, load_entities_mock, _, __):
+        settings_mock = Mock()
+        settings_mock.get_domain = Mock(return_value="switch")
+        settings_mock.reset = Mock()
+
+        entity_combo_mock = Mock()
+
+        instance = BaseCore(Mock(), True)
+        instance.initialized = True
+        instance.settings = settings_mock
+        instance.entity_combo = entity_combo_mock
+
+        # Widget initializes with old_domain=None and domain="switch" (which equals current_domain)
+        instance.on_change_domain(None, "switch", None)
+
+        settings_mock.reset.assert_not_called()
+        load_entities_mock.assert_called_once()
+        set_enabled_disabled_mock.assert_called_once()
+
+    @patch.object(BaseCore, "create_ui_elements")
+    @patch.object(BaseCore, "_create_event_assigner")
+    @patch.object(BaseCore, "_load_entities")
+    @patch.object(BaseCore, "set_enabled_disabled")
     def test_on_change_domain_no_entity(self, set_enabled_disabled_mock, load_entities_mock, _, __):
         settings_mock = Mock()
         settings_mock.get_entity = Mock(return_value=None)
@@ -197,3 +220,36 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
 
         self.assertIsNone(instance._last_loaded_entities)
 
+
+    @patch.object(BaseCore, "create_ui_elements")
+    @patch.object(BaseCore, "_create_event_assigner")
+    @patch.object(BaseCore, "_load_entities")
+    @patch.object(BaseCore, "set_enabled_disabled")
+    def test_on_change_domain_real_user_change_with_premature_settings_update(self, set_enabled_disabled_mock, load_entities_mock, _, __):
+        """Real user change where ComboRow._handle_value_changed already called set_value must reset entity."""
+        entity_id = "switch.kitchen"
+
+        settings_mock = Mock()
+        settings_mock.get_entity = Mock(return_value=entity_id)
+        # Simulate ComboRow having already updated settings to new domain "light"
+        settings_mock.get_domain = Mock(return_value="light")
+        settings_mock.reset = Mock()
+
+        remove_all_items_mock = Mock()
+        entity_combo_mock = Mock()
+        entity_combo_mock.remove_all_items = remove_all_items_mock
+        entity_combo_mock.get_item_amount = Mock(return_value=0)
+
+        instance = BaseCore(Mock(), True)
+        instance.initialized = True
+        instance.settings = settings_mock
+        instance.entity_combo = entity_combo_mock
+
+        instance.on_change_domain(None, "light", "switch")
+
+        settings_mock.get_entity.assert_called_once()
+        instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(entity_id, instance.refresh)
+        settings_mock.reset.assert_called_once_with("light")
+        instance.entity_combo.remove_all_items.assert_called_once()
+        load_entities_mock.assert_called_once()
+        set_enabled_disabled_mock.assert_called_once()
