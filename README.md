@@ -41,7 +41,7 @@
   
 - **Long-Lived Access Token**: Required to authenticate with Home Assistant
   1. Navigate to your user profile in Home Assistant
-  2. Click on the **Security** tab
+  2. Click on the **Security** option
   3. Scroll to the bottom and create a new _Long-Lived Access Token_
   4. **Copy the token immediately** - you won't be able to retrieve it later!
 
