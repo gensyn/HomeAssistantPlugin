@@ -116,7 +116,7 @@ class TestMainInit(unittest.TestCase):
         register_mock.assert_called_once_with(
             plugin_name=const.HOME_ASSISTANT,
             github_repo="https://github.com/gensyn/HomeAssistantPlugin",
-            plugin_version="1.1.1",
+            plugin_version="1.2.1",
             app_version="1.5.0-beta"
         )
 
