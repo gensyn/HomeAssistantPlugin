@@ -300,10 +300,30 @@ class HomeAssistantBackend:
         """Deregister a callback that was registered to be called when the action is ready."""
         self._action_ready_callbacks.discard(on_ready)
 
+    def _refresh_entity(self, entity_id: str) -> None:
+        """Fetch the current state of a single entity from Home Assistant and update the cache."""
+        success, result, error = self._websocket.send_and_recv(backend_const.GET_STATES)
+        if not success:
+            log.error(backend_const.ERROR_STATES.format(error))
+            return
+
+        domain = entity_id.split(backend_const.DOT)[0]
+        entity_settings = self._entities.get(domain, {}).get(entity_id)
+        if entity_settings is None:
+            return
+
+        for entity in result:
+            if entity.get(backend_const.ENTITY_ID) == entity_id:
+                entity_settings[backend_const.STATE] = entity.get(backend_const.STATE, backend_const.OFF)
+                entity_settings[backend_const.ATTRIBUTES] = entity.get(backend_const.ATTRIBUTES, {})
+                return
+
     def add_tracked_entity(
-            self, entity_id: str, action_entity_updated: Callable
+            self, entity_id: str, action_entity_updated: Callable, use_cache: bool = True
     ) -> None:
-        """Register an entity with the Home Assistant websocket to be notified when the entity is updated."""
+        """Register an entity with the Home Assistant websocket to be notified when the entity is updated.
+
+        If use_cache is False, the entity's current state is fetched from Home Assistant first."""
         if not entity_id:
             return
 
@@ -318,6 +338,9 @@ class HomeAssistantBackend:
         if not entity_settings:
             # entity doesn't exist (anymore)
             return
+
+        if not use_cache:
+            self._refresh_entity(entity_id)
 
         if action_entity_updated in entity_settings.get(backend_const.ACTIONS, set()):
             # action already registered

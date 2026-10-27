@@ -141,7 +141,7 @@ class BaseCore(ActionCore):
             self.plugin_base.backend.remove_tracked_entity(old_entity, self.refresh)
 
         if entity and self.track_entity:
-            self.plugin_base.backend.add_tracked_entity(entity, self.refresh)
+            self.plugin_base.backend.add_tracked_entity(entity, self.refresh, use_cache=False)
 
         self.refresh()
         self.set_enabled_disabled()
