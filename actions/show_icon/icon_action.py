@@ -40,6 +40,7 @@ class ShowIcon(CustomizationCore):
 
     def get_config_rows(self) -> list:
         """Get the rows to be displayed in the UI."""
+        self.refresh_lists()
         return [self.domain_combo.widget, self.entity_combo.widget, self.icon.widget, self.color.widget,
                 self.scale.widget, self.opacity.widget, self.customization_expander.widget]
 

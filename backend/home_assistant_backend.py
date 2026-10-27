@@ -250,6 +250,16 @@ class HomeAssistantBackend:
 
         self._entities = entities
 
+    def reload_entities(self) -> None:
+        """Reload the entities from Home Assistant to pick up newly added ones."""
+        if self.is_connected():
+            self._load_entities()
+
+    def reload_actions(self) -> None:
+        """Reload the actions from Home Assistant to pick up newly added ones."""
+        if self.is_connected():
+            self._load_actions()
+
     def get_entities(self, domain: str) -> list[str]:
         """Return a list of all entities known to Home Assistant."""
         if not domain:
