@@ -36,7 +36,6 @@ class TestTextRow(unittest.TestCase):
 
         super_init_mock.side_effect = super_init
         init_title_mock.return_value = "Title"
-        text_helper_mock.get_value.return_value = "current_value"
         customization_helper_mock.convert_color_list_to_hex.side_effect = ["#FF0000", "#0000FF"]
 
         customization_mock = Mock()
@@ -60,9 +59,12 @@ class TestTextRow(unittest.TestCase):
 
         instance = TextRow(lm, customization_mock, customization_count, index, attributes, state, settings)
 
-        super_init_mock.assert_called_once_with(instance, lm, customization_count, index, attributes, state, settings) # with instance because of autospec
-        text_helper_mock.get_value.assert_called_once_with(state, settings, customization_mock)
-        init_title_mock.assert_called_once_with(customization_mock, "current_value")
+        super_init_mock.assert_called_once_with(instance, lm, customization_count, index, attributes, state, settings, None) # with instance because of autospec
+        init_title_mock.assert_called_once()
+        self.assertEqual(customization_mock, init_title_mock.call_args.args[0])
+        condition = Mock()
+        init_title_mock.call_args.args[1](condition)
+        text_helper_mock.get_condition_value.assert_called_once_with(state, settings, condition, None)
         set_title_mock.assert_called_once_with(
             "Title\nPosition position_name\nAttribute text_name = \"custom text\"\nRound 2\nRound Precision 1\nText Size 150\nText Color #FF0000\nOutline Size 3\nOutline Color #0000FF\nShow Unit Short True\nLine Break Short False"
         )

@@ -16,8 +16,9 @@ class TextCustomization(Customization):
 
     def __init__(self, attribute: str, operator: str, value: str, position: str, text_attribute: str, custom_text: str,
                  do_round: bool, round_precision: int, text_size: int, text_color: tuple[int, int, int, int],
-                 outline_size: int, outline_color: tuple[int, int, int, int], show_unit: bool, line_break: bool):
-        super().__init__(attribute, operator, value)
+                 outline_size: int, outline_color: tuple[int, int, int, int], show_unit: bool, line_break: bool,
+                 entity: str = None, conditions: list = None):
+        super().__init__(attribute, operator, value, entity, conditions)
         self.position: str = position
         self.text_attribute: str = text_attribute
         self.custom_text: str = custom_text
@@ -32,20 +33,18 @@ class TextCustomization(Customization):
 
     @classmethod
     def from_dict(cls, customization: dict):
-        return cls(customization[customization_const.CONDITION][customization_const.ATTRIBUTE],
-                   customization[customization_const.CONDITION][customization_const.OPERATOR],
-                   customization[customization_const.CONDITION][customization_const.VALUE],
-                   customization[text_const.CUSTOM_POSITION],
-                   customization[text_const.CUSTOM_ATTRIBUTE],
-                   customization[text_const.CUSTOM_CUSTOM_TEXT],
-                   customization[text_const.CUSTOM_ROUND],
-                   customization[text_const.CUSTOM_ROUND_PRECISION],
-                   customization[text_const.CUSTOM_TEXT_SIZE],
-                   customization[text_const.CUSTOM_TEXT_COLOR],
-                   customization[text_const.CUSTOM_OUTLINE_SIZE],
-                   customization[text_const.CUSTOM_OUTLINE_COLOR],
-                   customization[text_const.CUSTOM_SHOW_UNIT],
-                   customization[text_const.CUSTOM_LINE_BREAK])
+        return cls(**cls.parse_condition(customization[customization_const.CONDITION]),
+                   position=customization[text_const.CUSTOM_POSITION],
+                   text_attribute=customization[text_const.CUSTOM_ATTRIBUTE],
+                   custom_text=customization[text_const.CUSTOM_CUSTOM_TEXT],
+                   do_round=customization[text_const.CUSTOM_ROUND],
+                   round_precision=customization[text_const.CUSTOM_ROUND_PRECISION],
+                   text_size=customization[text_const.CUSTOM_TEXT_SIZE],
+                   text_color=customization[text_const.CUSTOM_TEXT_COLOR],
+                   outline_size=customization[text_const.CUSTOM_OUTLINE_SIZE],
+                   outline_color=customization[text_const.CUSTOM_OUTLINE_COLOR],
+                   show_unit=customization[text_const.CUSTOM_SHOW_UNIT],
+                   line_break=customization[text_const.CUSTOM_LINE_BREAK])
 
     def get_position(self) -> str:
         """
@@ -130,11 +129,7 @@ class TextCustomization(Customization):
         :return: this customization as a dict
         """
         return {
-            customization_const.CONDITION: {
-                customization_const.ATTRIBUTE: self.attribute,
-                customization_const.OPERATOR: self.operator,
-                customization_const.VALUE: self.value
-            },
+            customization_const.CONDITION: self.export_condition(),
             text_const.CUSTOM_POSITION: self.position,
             text_const.CUSTOM_ATTRIBUTE: self.text_attribute,
             text_const.CUSTOM_CUSTOM_TEXT: self.custom_text,

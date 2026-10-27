@@ -274,7 +274,7 @@ class ShowText(CustomizationCore):
             return
 
         text, position, text_size, text_color, outline_size, outline_color = text_helper.get_text(
-            state, self.settings, self.plugin_base.backend.is_connected()
+            state, self.settings, self.plugin_base.backend.is_connected(), self.plugin_base.backend.get_entity
         )
         self.set_label(
             text, position, text_color, None, text_size, outline_size, outline_color,

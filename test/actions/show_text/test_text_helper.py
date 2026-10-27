@@ -12,6 +12,22 @@ sys.path.insert(0, absolute_plugin_path)
 
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from HomeAssistantPlugin.actions.show_text import text_const, text_helper
+from HomeAssistantPlugin.actions.show_text.text_customization import TextCustomization
+from HomeAssistantPlugin.actions.cores.customization_core.condition import Condition, evaluate
+
+
+def _mock_customization(operator=None, value=None, attribute="attribute", entity=None):
+    """A mocked customization whose conditions are evaluated based on the mocked getters."""
+    customization = Mock()
+    customization.get_value.return_value = value
+    customization.get_operator.return_value = operator
+    customization.get_attribute.return_value = attribute
+    customization.get_entity.return_value = entity
+    customization.get_all_conditions.side_effect = lambda: [
+        Condition(customization.get_attribute(), customization.get_operator(), customization.get_value(),
+                  customization.get_entity())]
+    customization.matches.side_effect = lambda get_value: evaluate(customization.get_all_conditions(), get_value)
+    return customization
 
 
 class TestTextCustomization(unittest.TestCase):
@@ -36,9 +52,9 @@ class TestTextCustomization(unittest.TestCase):
         settings.get_attribute.assert_not_called()
 
     @patch(
-        'HomeAssistantPlugin.actions.show_text.text_helper.log.error')
+        'HomeAssistantPlugin.actions.cores.customization_core.condition.logging.error')
     @patch('HomeAssistantPlugin.actions.show_text.text_helper._get_text')
-    @patch('HomeAssistantPlugin.actions.show_text.text_helper.get_value')
+    @patch('HomeAssistantPlugin.actions.show_text.text_helper.get_condition_value')
     @patch('HomeAssistantPlugin.actions.show_text.text_helper._replace_values')
     def test_get_text_success(self, replace_values_mock, get_value_mock, get_text_mock, log_mock):
         settings = Mock()
@@ -57,21 +73,10 @@ class TestTextCustomization(unittest.TestCase):
 
         get_value_mock.side_effect = ["on", "off", 1.5, 3.6]
 
-        customization_not_float = Mock()
-        customization_not_float.get_value.return_value = "on"
-        customization_not_float.get_operator.return_value = "=="
-
-        customization_value_not_float = Mock()
-        customization_value_not_float.get_value.return_value = 0.0
-        customization_value_not_float.get_operator.return_value = ">"
-
-        customization_custom_value_error = Mock()
-        customization_custom_value_error.get_value.return_value = "invalid_float"
-        customization_custom_value_error.get_operator.return_value = ">"
-
-        customization_float = Mock()
-        customization_float.get_value.return_value = 3.7
-        customization_float.get_operator.return_value = "<"
+        customization_not_float = _mock_customization("==", "on")
+        customization_value_not_float = _mock_customization(">", 0.0)
+        customization_custom_value_error = _mock_customization(">", "invalid_float")
+        customization_float = _mock_customization("<", 3.7)
 
         settings.get_customizations.return_value = [customization_not_float, customization_value_not_float,
                                                     customization_custom_value_error, customization_float]
@@ -103,8 +108,7 @@ class TestTextCustomization(unittest.TestCase):
 
         state = {"state": "on"}
 
-        customization = Mock()
-        customization.get_attribute.return_value = "state"
+        customization = _mock_customization(attribute="state")
 
         result = text_helper.get_value(state, settings, customization)
 
@@ -122,8 +126,7 @@ class TestTextCustomization(unittest.TestCase):
 
         state = {"state": "on"}
 
-        customization = Mock()
-        customization.get_attribute.return_value = text_const.CUSTOM_TEXT_LENGTH
+        customization = _mock_customization(attribute=text_const.CUSTOM_TEXT_LENGTH)
 
         result = text_helper.get_value(state, settings, customization)
 
@@ -144,12 +147,62 @@ class TestTextCustomization(unittest.TestCase):
             }
         }
 
-        customization = Mock()
-        customization.get_attribute.return_value = "volume"
+        customization = _mock_customization(attribute="volume")
 
         result = text_helper.get_value(state, settings, customization)
 
         self.assertEqual(123, result)
+
+    def test_get_value_other_entity(self):
+        settings = Mock()
+        state = {"state": "on", customization_const.ATTRIBUTES: {}}
+        get_entity = Mock(return_value={"state": "off", customization_const.ATTRIBUTES: {"volume": 5}})
+
+        self.assertEqual(
+            "off", text_helper.get_value(state, settings, _mock_customization(attribute="state", entity="light.a"),
+                                         get_entity))
+        self.assertEqual(
+            5, text_helper.get_value(state, settings, _mock_customization(attribute="volume", entity="light.a"),
+                                     get_entity))
+        get_entity.assert_called_with("light.a")
+
+    @patch('HomeAssistantPlugin.actions.show_text.text_helper._get_text')
+    def test_get_value_text_length_not_used_for_other_entity(self, get_text_mock):
+        settings = Mock()
+        state = {"state": "on", customization_const.ATTRIBUTES: {}}
+        get_entity = Mock(return_value={"state": "off", customization_const.ATTRIBUTES: {}})
+
+        result = text_helper.get_value(
+            state, settings, _mock_customization(attribute=text_const.CUSTOM_TEXT_LENGTH, entity="light.a"),
+            get_entity)
+
+        get_text_mock.assert_not_called()
+        self.assertIsNone(result)
+
+    def test_get_text_customization_on_other_entity(self):
+        settings = Mock()
+        settings.get_position.return_value = "center"
+        settings.get_text_size.return_value = 12
+        settings.get_text_color.return_value = (255, 255, 255, 255)
+        settings.get_outline_size.return_value = 1
+        settings.get_outline_color.return_value = (0, 0, 0, 255)
+        settings.get_attribute.return_value = "state"
+        settings.get_round.return_value = False
+        settings.get_round_precision.return_value = 0
+        settings.get_show_unit.return_value = False
+        settings.get_unit_line_break.return_value = False
+        customization = TextCustomization(
+            "state", "==", "on", "top", text_const.CUSTOM_CUSTOM_TEXT, "custom", None, None, None, None, None, None,
+            None, None, entity="light.a",
+            conditions=[Condition("state", "==", "home", "person.b", "or")])
+        settings.get_customizations.return_value = [customization]
+        state = {"state": "x", customization_const.ATTRIBUTES: {}}
+
+        def get_entity(entity_id):
+            return {"state": {"light.a": "off", "person.b": "home"}[entity_id], customization_const.ATTRIBUTES: {}}
+
+        self.assertEqual("custom", text_helper.get_text(state, settings, True, get_entity)[0])
+        self.assertEqual("x", text_helper.get_text(state, settings, True, lambda _: {"state": "off"})[0])
 
     def test_get_text_state_no_unit(self):
         state = {"state": "23.5678"}

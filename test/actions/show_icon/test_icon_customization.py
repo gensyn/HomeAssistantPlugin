@@ -57,3 +57,23 @@ class TestIconCustomization(unittest.TestCase):
         self.assertEqual(icon_cust.get_attribute(), self.attribute)
         self.assertEqual(icon_cust.get_operator(), self.operator)
         self.assertEqual(icon_cust.get_value(), self.value)
+
+    def test_export_and_from_dict_with_entity_and_conditions(self):
+        self.customization_dict[customization_const.CONDITION] = {
+            customization_const.ATTRIBUTE: self.attribute,
+            customization_const.OPERATOR: self.operator,
+            customization_const.VALUE: self.value,
+            customization_const.ENTITY: "sensor.a",
+            customization_const.CONDITIONS: [
+                {customization_const.ATTRIBUTE: "state", customization_const.OPERATOR: "==",
+                 customization_const.VALUE: "on", customization_const.ENTITY: "light.b",
+                 customization_const.LOGIC: "or"}
+            ],
+        }
+
+        icon_cust = icon_customization.IconCustomization.from_dict(self.customization_dict)
+
+        self.assertEqual("sensor.a", icon_cust.get_entity())
+        self.assertEqual(1, len(icon_cust.get_conditions()))
+        self.assertEqual({"sensor.a", "light.b"}, icon_cust.get_entities())
+        self.assertEqual(self.customization_dict, icon_cust.export())

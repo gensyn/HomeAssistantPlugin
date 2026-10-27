@@ -21,7 +21,7 @@ from GtkHelper.GenerativeUI.EntryRow import EntryRow
 from GtkHelper.GenerativeUI.ScaleRow import ScaleRow
 from src.backend.DeckManagement.InputIdentifier import Input
 from src.backend.PluginManager.EventAssigner import EventAssigner
-from HomeAssistantPlugin.actions.cores.customization_core import customization_helper
+from HomeAssistantPlugin.actions.cores.customization_core import customization_helper, condition
 from HomeAssistantPlugin.actions.cores.customization_core.customization_core import CustomizationCore
 from HomeAssistantPlugin.actions.cores.base_core.base_core import requires_initialization
 from HomeAssistantPlugin.actions.level_dial import level_const
@@ -74,45 +74,15 @@ def _get_entity_icon(state: dict, fallback: str) -> str:
 
 
 def _evaluate_customizations(state: dict, customizations: list[LevelDialCustomization],
-                             default_icon: str, default_color: str) -> tuple[str, str]:
+                             default_icon: str, default_color: str, get_entity=None) -> tuple[str, str]:
     """Evaluate customization rules against current state, returning (icon_name, color_hex)."""
     icon_name = default_icon
     color_hex = default_color
 
     for customization in customizations:
-        if customization.get_attribute() == "state":
-            value = state.get("state")
-        else:
-            value = state.get("attributes", {}).get(customization.get_attribute())
-
-        custom_value = customization.get_value()
-
-        try:
-            value = float(value)
-            custom_value = float(custom_value)
-        except (ValueError, TypeError):
-            pass
-
-        operator = customization.get_operator()
-        matched = False
-
-        if operator == "==" and str(value) == str(custom_value):
-            matched = True
-        elif operator == "!=" and str(value) != str(custom_value):
-            matched = True
-        elif isinstance(value, float):
-            try:
-                custom_value = float(custom_value)
-            except (ValueError, TypeError):
-                continue
-
-            if ((operator == "<" and value < custom_value)
-                    or (operator == "<=" and value <= custom_value)
-                    or (operator == ">" and value > custom_value)
-                    or (operator == ">=" and value >= custom_value)):
-                matched = True
-
-        if matched:
+        if customization.matches(
+                lambda c: condition.get_state_value(
+                    condition.resolve_state(state, c.entity, get_entity), c.attribute)):
             if customization.get_icon() is not None:
                 icon_name = customization.get_icon()
             if customization.get_color() is not None:
@@ -412,7 +382,7 @@ class LevelDial(CustomizationCore):
         # Apply customization rules (icon/color overrides based on state conditions)
         customizations = self.settings.get_customizations()
         icon_name, color_hex = _evaluate_customizations(
-            state, customizations, default_icon, default_color
+            state, customizations, default_icon, default_color, self.plugin_base.backend.get_entity
         )
 
         if entity_state in ("off", "unavailable", "unknown") or level is None:

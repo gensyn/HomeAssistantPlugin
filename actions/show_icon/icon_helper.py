@@ -3,10 +3,10 @@ Module for icon related operations.
 """
 
 import json
-import logging
 import os
+from typing import Any, Callable
 
-from HomeAssistantPlugin.actions.cores.customization_core import customization_helper
+from HomeAssistantPlugin.actions.cores.customization_core import customization_helper, condition
 from HomeAssistantPlugin.actions.show_icon import icon_const
 from HomeAssistantPlugin.actions.show_icon.icon_customization import IconCustomization
 from HomeAssistantPlugin.actions.show_icon.icon_settings import ShowIconSettings
@@ -18,7 +18,8 @@ with open(MDI_FILENAME, "r", encoding="utf-8") as f:
     MDI_ICONS: dict[str, str] = json.loads(f.read())
 
 
-def get_icon(state: dict, settings: ShowIconSettings, is_connected: bool) -> tuple[str, float]:
+def get_icon(state: dict, settings: ShowIconSettings, is_connected: bool,
+             get_entity: Callable[[str], dict] = None) -> tuple[str, float]:
     """
     Get the item corresponding to the given state.
     """
@@ -27,7 +28,7 @@ def get_icon(state: dict, settings: ShowIconSettings, is_connected: bool) -> tup
                                                                    icon_const.ICON_COLOR_RED).replace(
             "<opacity>", "1.0")), round(icon_const.DEFAULT_ICON_SCALE / 100, 2)
 
-    name, color, scale, opacity = _get_icon_settings(state, settings)
+    name, color, scale, opacity = _get_icon_settings(state, settings, get_entity)
 
     if name not in MDI_ICONS:
         # color and opacity only have an effect on icons
@@ -41,7 +42,8 @@ def get_icon(state: dict, settings: ShowIconSettings, is_connected: bool) -> tup
     return (icon.replace("<color>", color).replace("<opacity>", str(opacity))), scale
 
 
-def _get_icon_settings(state: dict, settings: ShowIconSettings) -> tuple[str, str, float, float]:
+def _get_icon_settings(state: dict, settings: ShowIconSettings,
+                       get_entity: Callable[[str], dict] = None) -> tuple[str, str, float, float]:
     # default value for the icon is the icon set in HA
     name = settings.get_icon() or state.get(icon_const.ATTRIBUTES, {}).get(icon_const.ATTRIBUTE_ICON, icon_const.EMPTY_STRING).replace("mdi:", icon_const.EMPTY_STRING)
     color = settings.get_color()
@@ -55,40 +57,7 @@ def _get_icon_settings(state: dict, settings: ShowIconSettings) -> tuple[str, st
     customizations: list[IconCustomization] = settings.get_customizations()
 
     for customization in customizations:
-        value = get_value(state, customization)
-
-        custom_icon_value = customization.get_value()
-
-        try:
-            # if both values are numbers, convert them both to float
-            # if one is int and one float, testing for equality might fail (21 vs 21.0 eg)
-            value = float(value)
-            custom_icon_value = float(custom_icon_value)
-        except (ValueError, TypeError):
-            pass
-
-        operator = customization.get_operator()
-
-        if ((operator == "==" and str(value) == str(custom_icon_value))
-                or (operator == "!=" and str(value) != str(custom_icon_value))):
-            name, color, scale, opacity = _replace_values(name, color, scale, opacity,
-                                                          customization)
-
-        if not isinstance(value, float):
-            # other operators are only applicable to numbers
-            continue
-
-        try:
-            custom_icon_value = float(custom_icon_value)
-        except ValueError:
-            logging.error("Could not convert custom value to float: %s",
-                          custom_icon_value)
-            continue
-
-        if ((operator == "<" and value < custom_icon_value)
-                or (operator == "<=" and value <= custom_icon_value)
-                or (operator == ">" and value > custom_icon_value)
-                or (operator == ">=" and value >= custom_icon_value)):
+        if customization.matches(lambda c: get_condition_value(state, c, get_entity)):
             name, color, scale, opacity = _replace_values(name, color, scale, opacity, customization)
 
     #
@@ -100,16 +69,20 @@ def _get_icon_settings(state: dict, settings: ShowIconSettings) -> tuple[str, st
     return name, color, scale, opacity
 
 
-def get_value(state: dict, customization: IconCustomization):
+def get_condition_value(state: dict, condition_: condition.Condition,
+                        get_entity: Callable[[str], dict] = None) -> Any:
     """
-    Gets the current value that the customization references.
+    Gets the current value that the condition references.
     """
-    if customization.get_attribute() == icon_const.STATE:
-        value = state[icon_const.STATE]
-    else:
-        value = state[icon_const.ATTRIBUTES].get(customization.get_attribute())
+    return condition.get_state_value(condition.resolve_state(state, condition_.entity, get_entity),
+                                     condition_.attribute)
 
-    return value
+
+def get_value(state: dict, customization: IconCustomization, get_entity: Callable[[str], dict] = None) -> Any:
+    """
+    Gets the current value that the first condition of the customization references.
+    """
+    return get_condition_value(state, customization.get_all_conditions()[0], get_entity)
 
 
 def _replace_values(name: str, color: str, scale: float, opacity: str, customization: IconCustomization):

@@ -48,7 +48,7 @@ class TestTextWindow(unittest.TestCase):
         instance = TextWindow(lm, attributes, callback, current, index)
 
         super_init_mock.assert_called_once_with(instance, lm, attributes_expected, callback, current,
-                                                index)  # with instance because of autospec
+                                                index, None, None)  # with instance because of autospec
         set_title_mock.assert_called_once_with("Test Title")
         self.assertEqual(10, create_check_button_mock.call_count)
         self.assertEqual(10, create_label_mock.call_count)
@@ -425,6 +425,10 @@ class TestTextWindow(unittest.TestCase):
         instance.operator.value = ">="
         instance.operator.get_selected_item.return_value = instance.operator
 
+        instance.condition_entity = Mock()
+        instance.condition_entity.get_selected_item.return_value.value = "light.a"
+        instance.condition_rows = []
+
         color_mock = Mock()
         color_mock.get_rgba.return_value = Mock()
 
@@ -472,6 +476,7 @@ class TestTextWindow(unittest.TestCase):
         text_customization_mock.assert_called_once_with(attribute="attribute1",
                                                         operator=">=",
                                                         value="some_value",
+                                                        entity="light.a", conditions=[],
                                                         position="top", text_attribute=text_const.CUSTOM_CUSTOM_TEXT,
                                                         custom_text="Custom Words",
                                                         do_round=True, round_precision=3,

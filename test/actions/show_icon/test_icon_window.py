@@ -50,7 +50,7 @@ class TestIconWindow(unittest.TestCase):
         self.assertEqual(2, create_scale_entry_mock.call_count)
         self.assertEqual(4, create_label_mock.call_count)
         customization_window_init_mock.assert_called_once_with(instance, lm, attributes, callback, current,
-                                                               index)  # with instance because of autospec
+                                                               index, None, None)  # with instance because of autospec
         set_title_mock.assert_called_once_with("Test Title")
         self.assertEqual(15, instance.grid_fields.attach.call_count)
         after_init_mock.assert_called_once()
@@ -185,6 +185,9 @@ class TestIconWindow(unittest.TestCase):
         instance.condition_attribute.get_selected_item.return_value.get_string.return_value = "attribute_name"
         instance.operator = Mock()
         instance.operator.get_selected_item.return_value.value = "=="
+        instance.condition_entity = Mock()
+        instance.condition_entity.get_selected_item.return_value.value = ""
+        instance.condition_rows = []
         instance.entry_value = Mock()
         instance.entry_value.get_text.return_value = "some_value"
         instance.icon = Mock()
@@ -224,7 +227,7 @@ class TestIconWindow(unittest.TestCase):
         instance.color.get_rgba.assert_called_once()
         instance.scale.get_value.assert_called_once()
         instance.opacity.get_value.assert_called_once()
-        icon_customization_mock.assert_called_once_with(attribute="attribute_name", operator="==", value="some_value",
+        icon_customization_mock.assert_called_once_with(attribute="attribute_name", operator="==", value="some_value", entity=None, conditions=[],
                                                         icon="mdi:home", color=(67830, 0, 0, 255), scale=150,
                                                         opacity=200)
         instance.callback.assert_called_once()
