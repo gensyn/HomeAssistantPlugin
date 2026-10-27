@@ -138,7 +138,8 @@ class ShowIcon(CustomizationCore):
             self.set_media()
             return
 
-        icon, scale = icon_helper.get_icon(state, self.settings, self.plugin_base.backend.is_connected())
+        icon, scale = icon_helper.get_icon(state, self.settings, self.plugin_base.backend.is_connected(),
+                                         self.plugin_base.backend.get_entity)
         self.set_media(media_path=icon, size=scale)
 
         self._load_customizations()

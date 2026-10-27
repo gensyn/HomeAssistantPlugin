@@ -14,12 +14,10 @@ class IconRow(CustomizationRow):
     """
 
     def __init__(self, lm, customization: IconCustomization, customization_count: int, index: int, attributes: list,
-                 state: dict, settings: CustomizationSettings):
-        super().__init__(lm, customization_count, index, attributes, state, settings)
+                 state: dict, settings: CustomizationSettings, get_entity=None):
+        super().__init__(lm, customization_count, index, attributes, state, settings, get_entity)
 
-        current_value = icon_helper.get_value(state, customization)
-
-        title = self._init_title(customization, current_value)
+        title = self._init_title(customization, lambda c: icon_helper.get_condition_value(state, c, get_entity))
 
         if customization.get_icon() is not None:
             title += (f"\n{self.lm.get(icon_const.LABEL_ICON_ICON)} "

@@ -164,6 +164,8 @@ Create conditional icon appearances based on entity states.
 2. Define a condition (state or attribute value)
 3. Configure icon changes when the condition is met
 
+> **Conditions on other entities**: By default a condition checks the entity selected for the action. Choose a different **Entity** to check the state or an attribute of any Home Assistant entity instead; the action is updated whenever that entity changes. Use **Add condition** to combine several conditions with **and** / **or** (**and** is evaluated before **or**). This works the same way for icon, text, and level dial customizations.
+
 <div align="center">
 
 ![Icon customization dialog](assets/show_icon_customize.png)

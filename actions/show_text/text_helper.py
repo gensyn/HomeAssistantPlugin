@@ -1,16 +1,16 @@
 """
 Module for text related operations.
 """
-import logging as log
-from typing import Any
+from typing import Any, Callable
 
-from HomeAssistantPlugin.actions.cores.customization_core import customization_const
+from HomeAssistantPlugin.actions.cores.customization_core import customization_const, condition
 from HomeAssistantPlugin.actions.show_text import text_const
 from HomeAssistantPlugin.actions.show_text.text_customization import TextCustomization
 from HomeAssistantPlugin.actions.show_text.text_settings import ShowTextSettings
 
 
-def get_text(state: dict, settings: ShowTextSettings, is_connected: bool) -> tuple[str, str, int, str, int, str]:
+def get_text(state: dict, settings: ShowTextSettings, is_connected: bool,
+             get_entity: Callable[[str], dict] = None) -> tuple[str, str, int, str, int, str]:
     """
     Determine text, position and font size to show on StreamDeck.
     """
@@ -38,42 +38,7 @@ def get_text(state: dict, settings: ShowTextSettings, is_connected: bool) -> tup
     customizations: list[TextCustomization] = settings.get_customizations()
 
     for customization in customizations:
-        value = get_value(state, settings, customization)
-
-        custom_text_value = customization.get_value()
-
-        try:
-            # if both values are numbers, convert them both to float
-            # if one is int and one float, testing for equality might fail (21 vs 21.0 eg)
-            value = float(value)
-            custom_text_value = float(custom_text_value)
-        except (ValueError, TypeError):
-            pass
-
-        operator = customization.get_operator()
-
-        if ((operator == "==" and str(value) == str(custom_text_value))
-                or (operator == "!=" and str(value) != str(custom_text_value))):
-            (text, position, attribute, text_round, round_precision, text_size, text_color,
-             outline_size, outline_color, show_unit, line_break) = _replace_values(
-                text, position, attribute, text_round, round_precision, text_size, text_color,
-                outline_size, outline_color, show_unit, line_break, customization)
-
-        if not isinstance(value, float):
-            # other operators are only applicable to numbers
-            continue
-
-        try:
-            custom_text_value = float(custom_text_value)
-        except ValueError:
-            log.error("Could not convert custom value to float: %s",
-                      custom_text_value)
-            continue
-
-        if ((operator == "<" and value < custom_text_value)
-                or (operator == "<=" and value <= custom_text_value)
-                or (operator == ">" and value > custom_text_value)
-                or (operator == ">=" and value >= custom_text_value)):
+        if customization.matches(lambda c: get_condition_value(state, settings, c, get_entity)):
             (text, position, attribute, text_round, round_precision, text_size, text_color,
              outline_size, outline_color, show_unit, line_break) = _replace_values(
                 text, position, attribute, text_round, round_precision, text_size, text_color,
@@ -90,27 +55,27 @@ def get_text(state: dict, settings: ShowTextSettings, is_connected: bool) -> tup
     return text, position, text_size, text_color, outline_size, outline_color
 
 
-def get_value(state: dict, settings: ShowTextSettings, customization: TextCustomization) -> Any:
+def get_condition_value(state: dict, settings: ShowTextSettings, condition_: condition.Condition,
+                        get_entity: Callable[[str], dict] = None) -> Any:
     """
-    Gets the current value that the customization references.
+    Gets the current value that the condition references.
     """
-    attribute = settings.get_attribute()
-    text_round = settings.get_round()
-    round_precision = settings.get_round_precision()
-    show_unit = settings.get_show_unit()
-
-    customization_attribute = customization.get_attribute()
-
-    if customization_attribute == text_const.STATE:
-        value = state[text_const.STATE]
-    elif customization_attribute == text_const.CUSTOM_TEXT_LENGTH:
+    if not condition_.entity and condition_.attribute == text_const.CUSTOM_TEXT_LENGTH:
         # get text without line break to calculate the correct length
-        text = _get_text(state, attribute, text_round, round_precision, show_unit, False)
-        value = len(text)
-    else:
-        value = state[customization_const.ATTRIBUTES].get(customization_attribute)
+        text = _get_text(state, settings.get_attribute(), settings.get_round(), settings.get_round_precision(),
+                         settings.get_show_unit(), False)
+        return len(text)
 
-    return value
+    return condition.get_state_value(condition.resolve_state(state, condition_.entity, get_entity),
+                                     condition_.attribute)
+
+
+def get_value(state: dict, settings: ShowTextSettings, customization: TextCustomization,
+              get_entity: Callable[[str], dict] = None) -> Any:
+    """
+    Gets the current value that the first condition of the customization references.
+    """
+    return get_condition_value(state, settings, customization.get_all_conditions()[0], get_entity)
 
 
 def _get_text(state: dict, attribute: str, text_round: bool, round_precision: int, show_unit: bool,

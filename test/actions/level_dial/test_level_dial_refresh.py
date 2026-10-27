@@ -84,6 +84,7 @@ class TestLevelDialRefresh(unittest.TestCase):
         instance = LevelDial()
         instance.initialized = True
         instance.settings = settings_mock
+        instance.plugin_base = Mock()
         instance.set_top_label = Mock()
         instance.set_center_label = Mock()
         instance.set_media = Mock()
@@ -116,6 +117,7 @@ class TestLevelDialRefresh(unittest.TestCase):
         instance = LevelDial()
         instance.initialized = True
         instance.settings = settings_mock
+        instance.plugin_base = Mock()
         instance.set_top_label = Mock()
         instance.set_center_label = Mock()
         instance.set_media = Mock()
@@ -147,6 +149,7 @@ class TestLevelDialRefresh(unittest.TestCase):
         instance = LevelDial()
         instance.initialized = True
         instance.settings = settings_mock
+        instance.plugin_base = Mock()
         instance.set_top_label = Mock()
         instance.set_center_label = Mock()
         instance.set_media = Mock()
@@ -179,6 +182,7 @@ class TestLevelDialRefresh(unittest.TestCase):
         instance = LevelDial()
         instance.initialized = True
         instance.settings = settings_mock
+        instance.plugin_base = Mock()
         instance.set_top_label = Mock()
         instance.set_center_label = Mock()
         instance.set_media = Mock()
@@ -205,6 +209,7 @@ class TestLevelDialRefresh(unittest.TestCase):
         instance = LevelDial()
         instance.initialized = True
         instance.settings = settings_mock
+        instance.plugin_base = Mock()
         instance.set_top_label = Mock()
         instance.set_center_label = Mock()
         instance.set_media = Mock()
@@ -233,6 +238,7 @@ class TestLevelDialRefresh(unittest.TestCase):
         instance = LevelDial()
         instance.initialized = True
         instance.settings = settings_mock
+        instance.plugin_base = Mock()
         instance.set_top_label = Mock()
         instance.set_center_label = Mock()
         instance.set_media = Mock()
@@ -263,6 +269,7 @@ class TestLevelDialRefresh(unittest.TestCase):
         instance = LevelDial()
         instance.initialized = True
         instance.settings = settings_mock
+        instance.plugin_base = Mock()
         instance.set_top_label = Mock()
         instance.set_center_label = Mock()
         instance.set_media = Mock()

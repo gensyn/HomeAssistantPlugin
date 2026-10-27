@@ -6,6 +6,12 @@ LABEL_CUSTOMIZATION_CURRENT = "actions.home_assistant.customization.current.labe
 LABEL_CUSTOMIZATION_ADD = "actions.home_assistant.customization.add.label"
 LABEL_CUSTOMIZATION_UPDATE = "actions.home_assistant.customization.update.label"
 LABEL_CUSTOMIZATION_CANCEL = "actions.home_assistant.customization.cancel.label"
+LABEL_CUSTOMIZATION_ENTITY = "actions.home_assistant.customization.entity.label"
+LABEL_CUSTOMIZATION_THIS_ENTITY = "actions.home_assistant.customization.this_entity.label"
+LABEL_CUSTOMIZATION_AND = "actions.home_assistant.customization.and.label"
+LABEL_CUSTOMIZATION_OR = "actions.home_assistant.customization.or.label"
+LABEL_CUSTOMIZATION_ADD_CONDITION = "actions.home_assistant.customization.add_condition.label"
+LABEL_CUSTOMIZATION_REMOVE_CONDITION = "actions.home_assistant.customization.remove_condition.label"
 
 LABEL_CUSTOMIZATION_OPERATORS = {
     "==": "actions.home_assistant.customization.equals.label",
@@ -27,3 +33,8 @@ CONDITION = "condition"
 ATTRIBUTE = "attribute"
 OPERATOR = "operator"
 VALUE = "value"
+ENTITY = "entity"
+LOGIC = "logic"
+CONDITIONS = "conditions"
+AND = "and"
+OR = "or"

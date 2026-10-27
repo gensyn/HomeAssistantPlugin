@@ -30,7 +30,6 @@ class TestIconRow(unittest.TestCase):
 
         super_init_mock.side_effect = super_init
         init_title_mock.return_value = "Title"
-        icon_helper_mock.get_value.return_value = "current_value"
         customization_helper_mock.convert_color_list_to_hex.return_value = "#FF0000"
 
         customization_mock = Mock()
@@ -46,9 +45,12 @@ class TestIconRow(unittest.TestCase):
 
         instance = IconRow(lm, customization_mock, customization_count, index, attributes, state, settings)
 
-        super_init_mock.assert_called_once_with(instance, lm, customization_count, index, attributes, state, settings) # with instance because of autospec
-        icon_helper_mock.get_value.assert_called_once_with(state, customization_mock)
-        init_title_mock.assert_called_once_with(customization_mock, "current_value")
+        super_init_mock.assert_called_once_with(instance, lm, customization_count, index, attributes, state, settings, None) # with instance because of autospec
+        init_title_mock.assert_called_once()
+        self.assertEqual(customization_mock, init_title_mock.call_args.args[0])
+        condition = Mock()
+        init_title_mock.call_args.args[1](condition)
+        icon_helper_mock.get_condition_value.assert_called_once_with(state, condition, None)
         set_title_mock.assert_called_once_with(
             "Title\nIcon icon_name\nColor #FF0000\nScale 150\nOpacity 80"
         )

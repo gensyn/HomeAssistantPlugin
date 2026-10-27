@@ -36,6 +36,8 @@ class TestCustomizationCore(unittest.TestCase):
     @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_ready')
     def test_on_ready_not_connected(self, super_on_ready_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.plugin_base = Mock()
         instance.plugin_base.backend.is_connected.return_value = False
         instance.refresh = Mock()
@@ -52,6 +54,8 @@ class TestCustomizationCore(unittest.TestCase):
     @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_ready')
     def test_on_ready_connected(self, super_on_ready_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.plugin_base = Mock()
         instance.plugin_base.backend.is_connected.return_value = True
         instance.refresh = Mock()
@@ -75,6 +79,8 @@ class TestCustomizationCore(unittest.TestCase):
         expander_row_mock.return_value = expander_row_mock
 
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.create_ui_elements()
 
         super_create_ui_elements_mock.assert_called_once()
@@ -96,8 +102,11 @@ class TestCustomizationCore(unittest.TestCase):
     def test_on_add_customization_index_negative(self, get_attributes_mock):
         get_attributes_mock.return_value = ['attr1', 'attr2']
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.window_implementation = Mock()
         instance.window_implementation.return_value = instance.window_implementation
+        instance._get_all_entities = Mock(return_value=["light.a"])
         instance.lm = "456"
         instance.settings = Mock()
 
@@ -108,15 +117,19 @@ class TestCustomizationCore(unittest.TestCase):
         get_attributes_mock.assert_called_once()
         instance.settings.get_customizations.assert_not_called()
         instance.window_implementation.assert_called_once_with(instance.lm, ['attr1', 'attr2'], callback, current=None,
-                                                               index=-1)
+                                                               index=-1, entities=["light.a"],
+                                                               get_attributes=instance._get_attributes_for_entity)
         instance.window_implementation.show.assert_called_once()
 
     @patch.object(CustomizationCore, '_get_attributes')
     def test_on_add_customization_success(self, get_attributes_mock):
         get_attributes_mock.return_value = ['attr1', 'attr2']
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.window_implementation = Mock()
         instance.window_implementation.return_value = instance.window_implementation
+        instance._get_all_entities = Mock(return_value=["light.a"])
         instance.lm = "456"
         instance.settings = Mock()
         instance.settings.get_customizations.return_value = ["custom1", "custom2"]
@@ -128,11 +141,14 @@ class TestCustomizationCore(unittest.TestCase):
         get_attributes_mock.assert_called_once()
         instance.settings.get_customizations.assert_called_once()
         instance.window_implementation.assert_called_once_with(instance.lm, ['attr1', 'attr2'], callback,
-                                                               current="custom2", index=1)
+                                                               current="custom2", index=1, entities=["light.a"],
+                                                               get_attributes=instance._get_attributes_for_entity)
         instance.window_implementation.show.assert_called_once()
 
     def test_add_customization_already_exists(self):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.settings = Mock()
         instance.settings.get_customizations.return_value = ["custom1", "custom2"]
         instance.refresh = Mock()
@@ -149,6 +165,8 @@ class TestCustomizationCore(unittest.TestCase):
 
     def test_add_customization_replace(self):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.settings = Mock()
         instance.settings.get_customizations.return_value = ["custom1", "custom2"]
         instance.refresh = Mock()
@@ -165,6 +183,8 @@ class TestCustomizationCore(unittest.TestCase):
 
     def test_add_customization_add(self):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.settings = Mock()
         instance.settings.get_customizations.return_value = ["custom1", "custom2"]
         instance.refresh = Mock()
@@ -177,10 +197,13 @@ class TestCustomizationCore(unittest.TestCase):
         instance.settings.remove_customization.assert_not_called()
         instance.settings.replace_customization.assert_not_called()
         instance.settings.add_customization.assert_called_once_with("custom3")
+        instance._update_condition_entities.assert_called_once()
         instance.refresh.assert_called_once()
 
     def test_on_delete_customization(self):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.settings = Mock()
         instance.refresh = Mock()
 
@@ -189,10 +212,13 @@ class TestCustomizationCore(unittest.TestCase):
         instance._on_delete_customization(None, index)
 
         instance.settings.remove_customization.assert_called_once_with(1)
+        instance._update_condition_entities.assert_called_once()
         instance.refresh.assert_called_once()
 
     def test_on_move_up(self):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.settings = Mock()
         instance.refresh = Mock()
 
@@ -205,6 +231,8 @@ class TestCustomizationCore(unittest.TestCase):
 
     def test_on_move_down(self):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.settings = Mock()
         instance.refresh = Mock()
 
@@ -219,6 +247,8 @@ class TestCustomizationCore(unittest.TestCase):
         'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_domain(self, super_set_enabled_disabled_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.initialized = True
         instance.settings = Mock()
         instance.settings.get_domain.return_value = ""
@@ -241,6 +271,8 @@ class TestCustomizationCore(unittest.TestCase):
         'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_entity(self, super_set_enabled_disabled_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.initialized = True
         instance.settings = Mock()
         instance.settings.get_domain.return_value = "domain"
@@ -263,6 +295,8 @@ class TestCustomizationCore(unittest.TestCase):
         'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.set_enabled_disabled')
     def test_set_enabled_disabled_no_customizations(self, super_set_enabled_disabled_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.initialized = True
         instance.settings = Mock()
         instance.settings.get_domain.return_value = "domain"
@@ -286,6 +320,8 @@ class TestCustomizationCore(unittest.TestCase):
         'HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.set_enabled_disabled')
     def test_set_enabled_disabled_with_customizations(self, super_set_enabled_disabled_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.initialized = True
         instance.settings = Mock()
         instance.settings.get_domain.return_value = "domain"
@@ -308,6 +344,8 @@ class TestCustomizationCore(unittest.TestCase):
     def test_get_attributes(self):
         ha_entity = {"attributes": {"attr1": "value1", "attr2": "value2"}}
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.settings = Mock()
         instance.settings.get_entity.return_value = "entity"
         instance.plugin_base = Mock()
@@ -319,6 +357,8 @@ class TestCustomizationCore(unittest.TestCase):
 
     def test_load_customizations(self):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.customization_expander = Mock()
         instance._clearing = False
         instance._get_attributes = Mock()
@@ -344,7 +384,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance._load_customizations()
 
         instance.customization_expander.clear_rows.assert_called_once()
-        instance.row_implementation.assert_has_calls([call("abc", "custom1", 2, 0, ["attr1", "attr2"], "state", instance.settings), call("abc", "custom2", 2, 1, ["attr1", "attr2"], "state", instance.settings)])
+        instance.row_implementation.assert_has_calls([call("abc", "custom1", 2, 0, ["attr1", "attr2"], "state", instance.settings, instance.plugin_base.backend.get_entity), call("abc", "custom2", 2, 1, ["attr1", "attr2"], "state", instance.settings, instance.plugin_base.backend.get_entity)])
         edit_connect_mock.assert_has_calls([call(base_const.CONNECT_CLICKED, instance._on_add_customization, instance._add_customization, 0), call(base_const.CONNECT_CLICKED, instance._on_add_customization, instance._add_customization, 1)])
         delete_connect_mock.assert_has_calls([call(base_const.CONNECT_CLICKED, instance._on_delete_customization, 0), call(base_const.CONNECT_CLICKED, instance._on_delete_customization, 1)])
         up_connect_mock.assert_has_calls([call(base_const.CONNECT_CLICKED, instance._on_move_up, 0), call(base_const.CONNECT_CLICKED, instance._on_move_up, 1)])
@@ -352,6 +392,8 @@ class TestCustomizationCore(unittest.TestCase):
 
     def test_load_customizations_skipped_while_clearing(self):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.customization_expander = Mock()
         instance._clearing = True
 
@@ -362,6 +404,8 @@ class TestCustomizationCore(unittest.TestCase):
     @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_remove')
     def test_on_remove_clears_expander_and_resets_flag(self, super_on_remove_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.initialized = True
         instance._clearing = False
         instance.customization_expander = Mock()
@@ -377,6 +421,8 @@ class TestCustomizationCore(unittest.TestCase):
         """_clearing must be True when super().on_remove() runs so that any
         refresh() call triggered by the base class skips _load_customizations()."""
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.initialized = True
         instance._clearing = False
         instance.customization_expander = Mock()
@@ -396,6 +442,8 @@ class TestCustomizationCore(unittest.TestCase):
     @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_remove')
     def test_on_remove_clears_expander_even_when_super_raises(self, super_on_remove_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.initialized = True
         instance._clearing = False
         instance.customization_expander = Mock()
@@ -409,6 +457,8 @@ class TestCustomizationCore(unittest.TestCase):
 
     def test_on_remove_not_initialized(self):
         instance = CustomizationCore.__new__(CustomizationCore)
+        instance._condition_entities = set()
+        instance._update_condition_entities = Mock()
         instance.initialized = False
         instance._clearing = False
         instance.customization_expander = Mock()
@@ -418,3 +468,85 @@ class TestCustomizationCore(unittest.TestCase):
         self.assertIsNone(result)
         instance.customization_expander.clear_rows.assert_not_called()
         self.assertFalse(instance._clearing)
+
+    def test_get_attributes_for_entity(self):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.plugin_base = Mock()
+        instance.plugin_base.backend.get_entity.return_value = {"attributes": {"attr1": 1}}
+
+        result = instance._get_attributes_for_entity("light.a")
+
+        instance.plugin_base.backend.get_entity.assert_called_once_with("light.a")
+        self.assertEqual([customization_const.STATE, "attr1"], result)
+
+    def test_get_all_entities(self):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.plugin_base = Mock()
+        instance.plugin_base.backend.get_domains_for_entities.return_value = ["light", "sensor"]
+        instance.plugin_base.backend.get_entities.side_effect = lambda domain: {
+            "light": ["light.b", "light.a"], "sensor": ["sensor.a"]}[domain]
+
+        self.assertEqual(["light.a", "light.b", "sensor.a"], instance._get_all_entities())
+
+    def test_get_condition_entities(self):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        custom1 = Mock()
+        custom1.get_entities.return_value = {"light.a", "light.b"}
+        custom2 = Mock()
+        custom2.get_entities.return_value = {"light.b", "sensor.a"}
+        custom3 = Mock()
+        custom3.get_entities.return_value = set()
+        instance.settings = Mock()
+        instance.settings.get_customizations.return_value = [custom1, custom2, custom3]
+
+        self.assertEqual({"light.a", "light.b", "sensor.a"}, instance._get_condition_entities())
+
+    def test_update_condition_entities(self):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.plugin_base = Mock()
+        instance._condition_entities = {"light.old", "light.kept"}
+        instance._get_condition_entities = Mock(return_value={"light.kept", "light.new"})
+
+        instance._update_condition_entities()
+
+        instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(
+            "light.old", instance._on_condition_entity_changed)
+        instance.plugin_base.backend.add_tracked_entity.assert_has_calls(
+            [call("light.kept", instance._on_condition_entity_changed),
+             call("light.new", instance._on_condition_entity_changed)], any_order=True)
+        self.assertEqual({"light.kept", "light.new"}, instance._condition_entities)
+
+    def test_on_condition_entity_changed_ignores_state(self):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.refresh = Mock()
+
+        instance._on_condition_entity_changed({"state": "from another entity"})
+
+        instance.refresh.assert_called_once_with()
+
+    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_remove')
+    def test_on_remove_untracks_condition_entities(self, super_on_remove_mock):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.initialized = True
+        instance._clearing = False
+        instance.customization_expander = Mock()
+        instance.plugin_base = Mock()
+        instance._condition_entities = {"light.a"}
+
+        instance.on_remove()
+
+        instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(
+            "light.a", instance._on_condition_entity_changed)
+        self.assertEqual(set(), instance._condition_entities)
+
+    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_ready')
+    def test_on_ready_connected_tracks_condition_entities(self, super_on_ready_mock):
+        instance = CustomizationCore.__new__(CustomizationCore)
+        instance.plugin_base = Mock()
+        instance.plugin_base.backend.is_connected.return_value = True
+        instance._update_condition_entities = Mock()
+        instance._reload = Mock()
+
+        instance.on_ready()
+
+        instance._update_condition_entities.assert_called_once()

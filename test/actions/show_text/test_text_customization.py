@@ -13,6 +13,9 @@ from HomeAssistantPlugin.actions.show_text.text_customization import TextCustomi
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
 from HomeAssistantPlugin.actions.show_text import text_const
 
+from HomeAssistantPlugin.actions.cores.customization_core.condition import Condition
+
+
 class TestTextCustomization(unittest.TestCase):
     
     def test_all(self):
@@ -84,3 +87,20 @@ class TestTextCustomization(unittest.TestCase):
         self.assertEqual(outline_color, instance.outline_color)
         self.assertEqual(show_unit, instance.show_unit)
         self.assertEqual(line_break, instance.line_break)
+
+    def test_entity_and_conditions(self):
+        instance = TextCustomization(
+            "state", "==", "on", "top", "state", None, True, 1, 12, [1, 2, 3, 4], 2, [5, 6, 7, 8], False, True,
+            entity="light.a",
+            conditions=[Condition("brightness", ">", "5", "light.b", "or")])
+
+        export = instance.export()
+
+        self.assertEqual("light.a", export[customization_const.CONDITION][customization_const.ENTITY])
+        self.assertEqual(1, len(export[customization_const.CONDITION][customization_const.CONDITIONS]))
+
+        restored = TextCustomization.from_dict(export)
+
+        self.assertEqual("light.a", restored.get_entity())
+        self.assertEqual(instance.get_conditions(), restored.get_conditions())
+        self.assertEqual(export, restored.export())
