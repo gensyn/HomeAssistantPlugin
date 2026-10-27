@@ -37,6 +37,16 @@ class PerformAction(BaseCore):
         self._reload()
 
     @requires_initialization
+    def refresh_lists(self) -> None:
+        """Refresh domains, entities, actions and their parameters."""
+        if not self.plugin_base.backend.is_connected():
+            return
+        self.plugin_base.backend.reload_actions()
+        super().refresh_lists()
+        self._load_actions()
+        self._reload()
+
+    @requires_initialization
     def _perform_action(self, _) -> None:
         """Call the action stated in the settings."""
         domain = self.settings.get_domain()
@@ -68,6 +78,7 @@ class PerformAction(BaseCore):
 
     def get_config_rows(self) -> list:
         """Get the rows to be displayed in the UI."""
+        self.refresh_lists()
         return [self.domain_combo.widget, self.action_combo.widget, self.entity_combo.widget,
                 self.parameters_expander.widget]
 

@@ -82,6 +82,15 @@ class BaseCore(ActionCore):
         """Get the rows to be displayed in the UI."""
         raise NotImplementedError("Must be implemented by subclasses.")
 
+    @requires_initialization
+    def refresh_lists(self) -> None:
+        """Refresh the domain and entity lists, e.g. when the action is opened for editing."""
+        if not self.plugin_base.backend.is_connected():
+            return
+        self.plugin_base.backend.reload_entities()
+        self._load_domains()
+        self._load_entities()
+
     def create_ui_elements(self) -> None:
         """Get all entity rows."""
         self.domain_combo: ComboRow = ComboRow(

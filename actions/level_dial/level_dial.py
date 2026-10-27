@@ -212,6 +212,7 @@ class LevelDial(CustomizationCore):
         self._reload()
 
     def get_config_rows(self) -> list:
+        self.refresh_lists()
         return [
             self.domain_combo.widget,
             self.entity_combo.widget,
