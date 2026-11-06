@@ -12,7 +12,7 @@ from gi.repository.Gio import ListStore
 gi.require_version("Gtk", "4.0")
 from gi.repository.Gtk import Align, Box, Button, CssProvider, Entry, \
     Grid, Label, Window, CheckButton, Scale, Orientation, Switch, ColorDialog, ColorDialogButton, DropDown, \
-    StringObject, PropertyExpression
+    StringObject, PropertyExpression, StringFilterMatchMode
 
 from HomeAssistantPlugin.actions import const as base_const
 from HomeAssistantPlugin.actions.cores.customization_core import customization_const
@@ -341,6 +341,9 @@ class CustomizationWindow(Window):
         drop_down.set_margin_start(self.default_margin)
         drop_down.set_margin_end(self.default_margin)
         drop_down.set_enable_search(enable_search)
+        if enable_search and hasattr(drop_down, "set_search_match_mode"):
+            # match any substring, not just the beginning
+            drop_down.set_search_match_mode(StringFilterMatchMode.SUBSTRING)
 
         model = ListStore()
         for item in items:
