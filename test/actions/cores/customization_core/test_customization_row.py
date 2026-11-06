@@ -6,6 +6,9 @@ from unittest.mock import MagicMock, patch
 absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.parent.parent.absolute())
 sys.path.insert(0, absolute_plugin_path)
 
+from HomeAssistantPlugin.actions.cores.customization_core.condition import Condition
+
+
 class TestCustomizationRow(unittest.TestCase):
     def setUp(self):
         # Patch GTK/Adw widgets but NOT ActionRow
@@ -147,9 +150,30 @@ class TestCustomizationRow(unittest.TestCase):
             settings=self.mock_settings
         )
 
-        title = row._init_title(self.mock_customization, current_value=22)
-        self.assertIn("label-If", title)
-        self.assertIn("\"temperature\"", title)
-        self.assertIn("label-equals", title)
-        self.assertIn("\"23\"", title)
-        self.assertIn("(label-Current: 22):", title)
+        self.mock_customization.get_all_conditions.return_value = [Condition("temperature", "eq", 23)]
+
+        title = row._init_title(self.mock_customization, lambda _: 22)
+        self.assertEqual("label-If \"temperature\" label-equals \"23\" (label-Current: 22):\n", title)
+
+    def test_init_title_multiple_conditions_and_entity(self):
+        row = self.customization_row.CustomizationRow(
+            lm=self.mock_lm,
+            customization_count=1,
+            index=0,
+            attributes=self.mock_attributes,
+            state=self.mock_state,
+            settings=self.mock_settings
+        )
+
+        self.mock_customization.get_all_conditions.return_value = [
+            Condition("temperature", "eq", 23),
+            Condition("state", "gt", "on", "light.a", "or"),
+        ]
+        self.mock_const.OR = "or"
+        self.mock_const.LABEL_CUSTOMIZATION_OR = "Or"
+        self.mock_const.LABEL_CUSTOMIZATION_AND = "And"
+
+        title = row._init_title(self.mock_customization, lambda c: c.attribute)
+
+        self.assertEqual("label-If \"temperature\" label-equals \"23\" (label-Current: temperature)\n"
+                         "label-Or \"light.a: state\" label-greater \"on\" (label-Current: state):\n", title)

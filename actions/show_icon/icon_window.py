@@ -26,8 +26,9 @@ class IconWindow(CustomizationWindow):
     """
 
     def __init__(self, lm, attributes: list, callback: Callable,
-                 current: IconCustomization = None, index: int = None):
-        super().__init__(lm, attributes, callback, current, index)
+                 current: IconCustomization = None, index: int = None,
+                 entities: list[str] = None, get_attributes: Callable[[str], list[str]] = None):
+        super().__init__(lm, attributes, callback, current, index, entities, get_attributes)
 
         self.icons: list[str] = list(icon_helper.MDI_ICONS)
 
@@ -172,9 +173,7 @@ class IconWindow(CustomizationWindow):
         opacity = int(self.opacity.get_value()) if self.check_opacity.get_active() else None
 
         self.callback(customization=IconCustomization(
-            attribute=self.condition_attribute.get_selected_item().get_string(),
-            operator=self.operator.get_selected_item().value,
-            value=self.entry_value.get_text(), icon=icon, color=color_list, scale=scale,
+            **self.get_condition_kwargs(), icon=icon, color=color_list, scale=scale,
             opacity=opacity), index=self.index)
 
         self.destroy()
