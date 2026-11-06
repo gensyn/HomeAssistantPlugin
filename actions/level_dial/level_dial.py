@@ -207,8 +207,8 @@ class LevelDial(CustomizationCore):
             super().set_label(text, position, color, font_family, font_size,
                               outline_width, outline_color, font_weight, font_style, update)
 
-    def on_ready(self) -> None:
-        super().on_ready()
+    def _on_ready(self) -> None:
+        super()._on_ready()
         self._reload()
 
     def get_config_rows(self) -> list:

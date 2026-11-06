@@ -27,9 +27,9 @@ class CustomizationCore(BaseCore):
         self.customization_implementation = customization_implementation
         self.row_implementation = row_implementation
 
-    def on_ready(self) -> None:
+    def _on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
-        super().on_ready()
+        super()._on_ready()
 
         if not self.plugin_base.backend.is_connected():
             self.refresh()

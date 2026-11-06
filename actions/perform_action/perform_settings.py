@@ -28,14 +28,22 @@ class PerformActionSettings(BaseSettings):
         Get the action.
         :return: the action
         """
-        return self._action.get_settings()[perform_const.SETTING_ACTION][perform_const.SETTING_ACTION]
+        return (
+            self._action.get_settings()
+            .get(perform_const.SETTING_ACTION, {})
+            .get(perform_const.SETTING_ACTION)
+        )
 
     def get_parameters(self) -> dict:
         """
         Retrieve all action parameters.
         :return: all action parameters
         """
-        return self._action.get_settings()[perform_const.SETTING_ACTION][perform_const.ACTION_PARAMETERS]
+        return (
+            self._action.get_settings()
+            .get(perform_const.SETTING_ACTION, {})
+            .get(perform_const.ACTION_PARAMETERS, {})
+        )
 
     def set_parameter(self, field, value) -> None:
         """
@@ -67,6 +75,10 @@ class PerformActionSettings(BaseSettings):
         Empty the settings and keep only the UUID and the given domain.
         :param domain: the new domain
         """
+        if not domain and self.get_domain():
+            # Never drop a stored action because the backend could not offer a domain
+            return
+
         super().reset(domain)
         settings = self._action.get_settings()
         settings[perform_const.SETTING_ACTION][perform_const.SETTING_ACTION] = perform_const.EMPTY_STRING
