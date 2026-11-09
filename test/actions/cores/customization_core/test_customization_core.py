@@ -512,8 +512,8 @@ class TestCustomizationCore(unittest.TestCase):
         instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(
             "light.old", instance._on_condition_entity_changed)
         instance.plugin_base.backend.add_tracked_entity.assert_has_calls(
-            [call("light.kept", instance._on_condition_entity_changed),
-             call("light.new", instance._on_condition_entity_changed)], any_order=True)
+            [call("light.kept", instance._on_condition_entity_changed, use_cache=False),
+             call("light.new", instance._on_condition_entity_changed, use_cache=False)], any_order=True)
         self.assertEqual({"light.kept", "light.new"}, instance._condition_entities)
 
     def test_on_condition_entity_changed_ignores_state(self):
