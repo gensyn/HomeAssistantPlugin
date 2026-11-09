@@ -185,7 +185,7 @@ class CustomizationCore(BaseCore):
             backend.remove_tracked_entity(entity, self._on_condition_entity_changed)
 
         for entity in entities:
-            backend.add_tracked_entity(entity, self._on_condition_entity_changed)
+            backend.add_tracked_entity(entity, self._on_condition_entity_changed, use_cache=False)
 
         self._condition_entities = entities
 
