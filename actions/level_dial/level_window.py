@@ -16,8 +16,9 @@ class LevelDialWindow(CustomizationWindow):
     """Window to customize level dial icon and color."""
 
     def __init__(self, lm, attributes: list, callback: Callable,
-                 current: LevelDialCustomization = None, index: int = None):
-        super().__init__(lm, attributes, callback, current, index)
+                 current: LevelDialCustomization = None, index: int = None,
+                 entities: list[str] = None, get_attributes: Callable[[str], list[str]] = None):
+        super().__init__(lm, attributes, callback, current, index, entities, get_attributes)
 
         self.icons: list[str] = list(icon_helper.MDI_ICONS)
 
@@ -92,9 +93,7 @@ class LevelDialWindow(CustomizationWindow):
         color_list = customization_helper.convert_rgba_to_color_list(color) if color else None
 
         self.callback(customization=LevelDialCustomization(
-            attribute=self.condition_attribute.get_selected_item().get_string(),
-            operator=self.operator.get_selected_item().value,
-            value=self.entry_value.get_text(), icon=icon, color=color_list), index=self.index)
+            **self.get_condition_kwargs(), icon=icon, color=color_list), index=self.index)
 
         self.destroy()
 

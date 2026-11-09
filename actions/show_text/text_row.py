@@ -14,12 +14,11 @@ class TextRow(CustomizationRow):
     """
 
     def __init__(self, lm, customization: TextCustomization, customization_count: int, index: int, attributes: list,
-                 state: dict, settings: ShowTextSettings):
-        super().__init__(lm, customization_count, index, attributes, state, settings)
+                 state: dict, settings: ShowTextSettings, get_entity=None):
+        super().__init__(lm, customization_count, index, attributes, state, settings, get_entity)
 
-        current_value = text_helper.get_value(state, settings, customization)
-
-        title = self._init_title(customization, current_value)
+        title = self._init_title(customization,
+                                 lambda c: text_helper.get_condition_value(state, settings, c, get_entity))
 
         if customization.get_position() is not None:
             title += (f"\n{self.lm.get(text_const.LABEL_POSITION)} "

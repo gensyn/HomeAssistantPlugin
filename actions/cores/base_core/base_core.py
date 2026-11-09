@@ -1,5 +1,7 @@
 """The module for the Home Assistant action that is loaded in StreamController."""
 
+import threading
+
 import gi
 from HomeAssistantPlugin.actions import const
 from HomeAssistantPlugin.actions.cores.base_core.migrate import migrate_settings
@@ -8,7 +10,29 @@ from GtkHelper.GenerativeUI.ComboRow import ComboRow
 from src.backend.PluginManager.ActionCore import ActionCore
 
 gi.require_version('Gtk', '4.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, GLib
+
+
+def run_on_main_thread(func) -> None:
+    """
+    Run func on the GTK main thread, immediately if we are already on it.
+
+    StreamController calls on_ready() from several background threads - on_update() forwards to
+    on_ready() for backwards compatibility, and on_update() is invoked from the deck's media player
+    thread and from its input loading thread pool. Every Home Assistant action rebuilds its combo
+    box models in on_ready(), and mutating a Gio.ListStore that an Adw.ComboRow is showing from a
+    background thread corrupts GtkListItemManager's internal state. That shows up as a hard abort
+    ("gtk_list_tile_split: assertion failed") during startup rather than as a Python traceback.
+    """
+    if threading.current_thread() is threading.main_thread():
+        func()
+        return
+
+    def run():
+        func()
+        return False
+
+    GLib.idle_add(run)
 
 
 def set_substring_search(combo_row: ComboRow) -> None:
@@ -49,12 +73,34 @@ class BaseCore(ActionCore):
         self._create_event_assigner()
 
     def on_ready(self) -> None:
-        """Set up action when StreamController has finished loading."""
-        migrate_settings(self)
-        self.settings = self.settings_implementation(self)
-        self.initialized = True
+        """
+        Set up action when StreamController has finished loading.
 
-        self.plugin_base.backend.add_action_ready_callback(self.on_ready)
+        Everything this does ends up touching GTK widgets, so the real work is handed to the main
+        thread - StreamController also calls this from its media player and input loading threads
+        via on_update(). Subclasses override _on_ready(), never this method.
+        """
+        run_on_main_thread(self._on_ready)
+
+    def _on_ready(self) -> None:
+        """
+        The actual setup, always running on the GTK main thread.
+
+        This is re-invoked on every connect/disconnect of the Home Assistant backend, so it has to
+        be idempotent: the settings wrapper and the ready callback are only created once. Since it
+        only ever runs on the main thread, the initialization flag needs no locking.
+        """
+        if getattr(self, "is_removed", False):
+            # A stale copy the page has already replaced. It must not touch its former page or
+            # its key anymore - and it should not be called again either.
+            self.plugin_base.backend.remove_action_ready_callback(self.on_ready)
+            return
+
+        if not self.initialized:
+            migrate_settings(self)
+            self.settings = self.settings_implementation(self)
+            self.initialized = True
+            self.plugin_base.backend.add_action_ready_callback(self.on_ready)
 
         if not self.plugin_base.backend.is_connected():
             return
@@ -167,6 +213,9 @@ class BaseCore(ActionCore):
         """Load domains from Home Assistant."""
         domain = self.settings.get_domain()
         domains = self._get_domains()
+        if not domains and not self.plugin_base.backend.is_connected():
+            # Nothing to populate from - keep whatever is currently stored and shown
+            return
         if domain is not None and domain not in domains:
             domains.append(domain)
         domains = [d for d in domains if d is not None]
@@ -180,9 +229,10 @@ class BaseCore(ActionCore):
     def _load_entities(self) -> None:
         """Load entities from Home Assistant."""
         entity = self.settings.get_entity()
-        entities = self.plugin_base.backend.get_entities(
-            str(self.domain_combo.get_selected_item())
-        )
+        entities = self.plugin_base.backend.get_entities(self.settings.get_domain())
+        if not entities and not self.plugin_base.backend.is_connected():
+            # Nothing to populate from - keep whatever is currently stored and shown
+            return
         if entity is not None and entity not in entities:
             entities.append(entity)
         entities = [e for e in entities if e is not None]

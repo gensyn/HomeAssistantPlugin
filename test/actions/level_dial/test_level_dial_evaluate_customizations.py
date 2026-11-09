@@ -10,6 +10,7 @@ sys.path.insert(0, absolute_plugin_path)
 
 from HomeAssistantPlugin.actions.level_dial.level_dial import _evaluate_customizations
 from HomeAssistantPlugin.actions.level_dial.level_customization import LevelDialCustomization
+from HomeAssistantPlugin.actions.cores.customization_core.condition import Condition
 
 
 class TestEvaluateCustomizations(unittest.TestCase):
@@ -166,4 +167,30 @@ class TestEvaluateCustomizations(unittest.TestCase):
         state = {"state": "on", "attributes": {}}
         icon, _ = _evaluate_customizations(state, [cust], "lightbulb", "#ffdd00")
 
+        self.assertEqual(icon, "lightbulb")
+
+    def test_condition_on_other_entity(self):
+        cust = LevelDialCustomization(attribute="state", operator="==", value="on", icon="sun", color=None,
+                                      entity="light.other")
+        state = {"state": "off", "attributes": {}}
+
+        icon, _ = _evaluate_customizations(state, [cust], "lightbulb", "#ffdd00",
+                                           lambda _: {"state": "on", "attributes": {}})
+        self.assertEqual(icon, "sun")
+
+        icon, _ = _evaluate_customizations(state, [cust], "lightbulb", "#ffdd00",
+                                           lambda _: {"state": "off", "attributes": {}})
+        self.assertEqual(icon, "lightbulb")
+
+    def test_combined_conditions(self):
+        cust = LevelDialCustomization(
+            attribute="state", operator="==", value="on", icon="sun", color=None,
+            conditions=[Condition("brightness", ">", "100", logic="and")])
+
+        icon, _ = _evaluate_customizations({"state": "on", "attributes": {"brightness": 200}}, [cust],
+                                           "lightbulb", "#ffdd00")
+        self.assertEqual(icon, "sun")
+
+        icon, _ = _evaluate_customizations({"state": "on", "attributes": {"brightness": 50}}, [cust],
+                                           "lightbulb", "#ffdd00")
         self.assertEqual(icon, "lightbulb")
