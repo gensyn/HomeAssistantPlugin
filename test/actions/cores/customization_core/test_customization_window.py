@@ -149,6 +149,8 @@ class TestCustomizationWindow(unittest.TestCase):
         window.condition_attribute = MagicMock()
         window.operator = MagicMock()
         window.entry_value = MagicMock()
+        window.condition_entity = MagicMock()
+        window.condition_entity.get_selected_item.return_value.value = ""
         return window
 
     def test_init_sets_attributes_and_layout(self):
@@ -303,8 +305,88 @@ class TestCustomizationWindow(unittest.TestCase):
 
     def test_create_combo_operator_returns_combo(self):
         window = self.get_window()
-        combo = window._create_drop_down_operator()
+        combo = window.create_drop_down_items(window.build_operator_items())
         self.assertTrue(combo)
+
+    def test_build_operator_items(self):
+        window = self.get_window()
+        items = window.build_operator_items()
+        self.assertEqual(["==", "!=", "<", "<=", ">", ">="], [item.value for item in items])
+
+    def test_get_attributes_for_entity(self):
+        window = self.get_window()
+        window.get_attributes = MagicMock(return_value=["other"])
+        self.assertEqual(["attr1", "attr2", "attr3"], window.get_attributes_for_entity(""))
+        self.assertEqual(["other"], window.get_attributes_for_entity("light.a"))
+        window.get_attributes.assert_called_once_with("light.a")
+
+    def test_get_attributes_for_entity_without_callback(self):
+        window = self.get_window()
+        window.get_attributes = None
+        self.assertEqual([self.mock_customization_const.STATE], window.get_attributes_for_entity("light.a"))
+
+    def test_get_condition_kwargs(self):
+        window = self.get_window()
+        window.condition_attribute.get_selected_item.return_value.get_string.return_value = "attr1"
+        window.operator.get_selected_item.return_value.value = "=="
+        window.entry_value.get_text.return_value = "on"
+        window.condition_entity = MagicMock()
+        window.condition_entity.get_selected_item.return_value.value = "light.a"
+        extra = MagicMock()
+        window.condition_rows = [extra]
+
+        kwargs = window.get_condition_kwargs()
+
+        self.assertEqual({"attribute": "attr1", "operator": "==", "value": "on", "entity": "light.a",
+                          "conditions": [extra.get_condition.return_value]}, kwargs)
+
+    def test_get_condition_kwargs_this_entity(self):
+        window = self.get_window()
+        window.condition_attribute.get_selected_item.return_value.get_string.return_value = "attr1"
+        window.operator.get_selected_item.return_value.value = "=="
+        window.entry_value.get_text.return_value = "on"
+        window.condition_entity = MagicMock()
+        window.condition_entity.get_selected_item.return_value.value = ""
+
+        kwargs = window.get_condition_kwargs()
+
+        self.assertIsNone(kwargs["entity"])
+        self.assertEqual([], kwargs["conditions"])
+
+    def test_remove_condition_row(self):
+        window = self.get_window()
+        row = MagicMock()
+        window.condition_rows = [row]
+        window.box_conditions = MagicMock()
+
+        window.remove_condition_row(row)
+
+        self.assertEqual([], window.condition_rows)
+        window.box_conditions.remove.assert_called_once_with(row.box)
+
+    def test_on_add_button_validates_additional_conditions(self):
+        window = self.get_window()
+        window.condition_attribute.get_selected.return_value = 0
+        window.operator.get_selected.return_value = 0
+        window.entry_value.get_text.return_value = "42"
+        valid_row = MagicMock()
+        valid_row.validate.return_value = True
+        invalid_row = MagicMock()
+        invalid_row.validate.return_value = False
+        window.condition_rows = [valid_row, invalid_row]
+
+        self.assertFalse(window.on_add_button(None))
+        valid_row.validate.assert_called_once()
+        invalid_row.validate.assert_called_once()
+
+    def test_on_widget_changed_clears_additional_conditions(self):
+        window = self.get_window()
+        row = MagicMock()
+        window.condition_rows = [row]
+
+        window.on_widget_changed(None)
+
+        row.clear_errors.assert_called_once()
 
     def test_create_label_returns_label(self):
         window = self.get_window()

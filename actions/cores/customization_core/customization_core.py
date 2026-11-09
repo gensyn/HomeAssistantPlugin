@@ -22,6 +22,8 @@ class CustomizationCore(BaseCore):
         # Flag set during on_remove() to prevent _load_customizations() from
         # adding child widgets to the expander while it is detached from the UI.
         self._clearing = False
+        # Entities used in customization conditions that are tracked in addition to the action's entity
+        self._condition_entities: set[str] = set()
         super().__init__(*args, **kwargs)
         self.window_implementation = window_implementation
         self.customization_implementation = customization_implementation
@@ -35,6 +37,7 @@ class CustomizationCore(BaseCore):
             self.refresh()
             return
 
+        self._update_condition_entities()
         self._reload()
 
     def create_ui_elements(self) -> None:
@@ -62,7 +65,9 @@ class CustomizationCore(BaseCore):
         if index > -1:
             current = self.settings.get_customizations()[index]
 
-        window = self.window_implementation(self.lm, attributes, callback, current=current, index=index)
+        window = self.window_implementation(self.lm, attributes, callback, current=current, index=index,
+                                            entities=self._get_all_entities(),
+                                            get_attributes=self._get_attributes_for_entity)
 
         window.show()
 
@@ -79,6 +84,7 @@ class CustomizationCore(BaseCore):
             if index > -1:
                 # edited item is identical to existing - delete it
                 self.settings.remove_customization(index)
+                self._update_condition_entities()
             self.refresh()
             return
 
@@ -87,10 +93,12 @@ class CustomizationCore(BaseCore):
         else:
             self.settings.add_customization(customization)
 
+        self._update_condition_entities()
         self.refresh()
 
     def _on_delete_customization(self, _, index: int):
         self.settings.remove_customization(index)
+        self._update_condition_entities()
         self.refresh()
 
     def _on_move_up(self, _, index: int):
@@ -130,10 +138,61 @@ class CustomizationCore(BaseCore):
         Gets the list of attributes for the selected entity.
         :return: the list of attributes
         """
-        ha_entity = self.plugin_base.backend.get_entity(self.settings.get_entity())
+        return self._get_attributes_for_entity(self.settings.get_entity())
+
+    def _get_attributes_for_entity(self, entity: str) -> list[str]:
+        """
+        Gets the list of attributes for any entity.
+        :param entity: the entity to get the attributes for
+        :return: the list of attributes
+        """
+        ha_entity = self.plugin_base.backend.get_entity(entity)
         attributes = [customization_const.STATE]
         attributes.extend(list(ha_entity.get(customization_const.ATTRIBUTES, {}).keys()))
         return attributes
+
+    def _get_all_entities(self) -> list[str]:
+        """
+        Gets all entities in Home Assistant that can be used in conditions.
+        :return: the sorted list of entities
+        """
+        backend = self.plugin_base.backend
+        entities = set()
+        for domain in backend.get_domains_for_entities():
+            entities.update(backend.get_entities(domain))
+        return sorted(entities)
+
+    def _get_condition_entities(self) -> set[str]:
+        """
+        Gets all entities that are used in the conditions of the customizations.
+        :return: the set of entities
+        """
+        entities = set()
+        for customization in self.settings.get_customizations():
+            entities.update(customization.get_entities())
+        return entities
+
+    def _update_condition_entities(self) -> None:
+        """
+        Track all entities used in customization conditions and untrack those that are not used anymore.
+        """
+        backend = self.plugin_base.backend
+        entities = self._get_condition_entities()
+
+        for entity in self._condition_entities - entities:
+            backend.remove_tracked_entity(entity, self._on_condition_entity_changed)
+
+        for entity in entities:
+            backend.add_tracked_entity(entity, self._on_condition_entity_changed)
+
+        self._condition_entities = entities
+
+    def _on_condition_entity_changed(self, *_) -> None:
+        """
+        Executed when an entity used in a customization condition is updated.
+        The state that is passed belongs to a different entity, so it is ignored.
+        """
+        self.refresh()
 
     @requires_initialization
     def on_remove(self) -> None:
@@ -146,6 +205,9 @@ class CustomizationCore(BaseCore):
         """
         self._clearing = True
         try:
+            for entity in self._condition_entities:
+                self.plugin_base.backend.remove_tracked_entity(entity, self._on_condition_entity_changed)
+            self._condition_entities = set()
             super().on_remove()
         finally:
             self.customization_expander.clear_rows()
@@ -161,7 +223,7 @@ class CustomizationCore(BaseCore):
         for index, customization in enumerate(self.settings.get_customizations()):
             row = self.row_implementation(
                 self.lm, customization, len(self.settings.get_customizations()), index,
-                attributes, state, self.settings
+                attributes, state, self.settings, self.plugin_base.backend.get_entity
             )
             row.edit_button.connect(
                 base_const.CONNECT_CLICKED, self._on_add_customization,

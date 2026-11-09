@@ -19,11 +19,12 @@ class TextWindow(CustomizationWindow):
     """
 
     def __init__(self, lm, attributes: list, callback: Callable,
-                 current: TextCustomization = None, index: int = None):
+                 current: TextCustomization = None, index: int = None,
+                 entities: list[str] = None, get_attributes: Callable[[str], list[str]] = None):
         # add text_length to attributes
         attributes.insert(0, text_const.CUSTOM_TEXT_LENGTH)
 
-        super().__init__(lm, attributes, callback, current, index)
+        super().__init__(lm, attributes, callback, current, index, entities, get_attributes)
 
         self.set_title(lm.get(text_const.CUSTOMIZATION_WINDOW_TITLE))
 
@@ -347,9 +348,7 @@ class TextWindow(CustomizationWindow):
             else None
 
         self.callback(TextCustomization(
-            attribute=attribute,
-            operator=self.operator.get_selected_item().value,
-            value=value,
+            **self.get_condition_kwargs(),
             position=position, text_attribute=text_attribute, custom_text=custom_text,
             do_round=text_round, round_precision=precision,
             text_size=text_size, text_color=text_color_list, outline_size=outline_size,

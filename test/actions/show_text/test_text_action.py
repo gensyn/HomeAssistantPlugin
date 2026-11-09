@@ -517,7 +517,8 @@ class TestShowText(unittest.TestCase):
         instance.set_bottom_label.assert_called_once_with(text_const.EMPTY_STRING)
         instance.settings.get_entity.assert_called_once()
         instance._load_attributes.assert_called_once()
-        text_helper_mock.get_text.assert_called_once_with({"state": "state"}, instance.settings, True)
+        text_helper_mock.get_text.assert_called_once_with({"state": "state"}, instance.settings, True,
+                                                          instance.plugin_base.backend.get_entity)
         instance.set_label.assert_called_once_with("a", "b", "d", None, "c", "e", "f", None, None, True)
         instance._load_customizations.assert_called_once()
         instance.set_enabled_disabled.assert_called_once()

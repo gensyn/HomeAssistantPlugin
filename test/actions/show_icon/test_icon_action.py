@@ -243,7 +243,7 @@ class TestShowIcon(unittest.TestCase):
         instance.refresh()
 
         instance.plugin_base.backend.get_entity.assert_called_once_with("entity_id")
-        icon_helper_mock.get_icon.assert_called_once_with(state, instance.settings, True)
+        icon_helper_mock.get_icon.assert_called_once_with(state, instance.settings, True, instance.plugin_base.backend.get_entity)
         instance.set_media.assert_called_once_with(media_path="icon_path", size=3)
         instance._load_customizations.assert_called_once()
         instance.set_enabled_disabled.assert_called_once()
@@ -266,7 +266,7 @@ class TestShowIcon(unittest.TestCase):
         instance.refresh(state)
 
         instance.plugin_base.backend.get_entity.assert_not_called()
-        icon_helper_mock.get_icon.assert_called_once_with(state, instance.settings, True)
+        icon_helper_mock.get_icon.assert_called_once_with(state, instance.settings, True, instance.plugin_base.backend.get_entity)
         instance.set_media.assert_called_once_with(media_path="icon_path", size=3)
         instance._load_customizations.assert_called_once()
         instance.set_enabled_disabled.assert_called_once()

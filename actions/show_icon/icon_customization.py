@@ -15,8 +15,8 @@ class IconCustomization(Customization):
     """
 
     def __init__(self, attribute: str, operator: str, value: str, icon: str, color: tuple[int, int, int, int],
-                 scale: int, opacity: int):
-        super().__init__(attribute, operator, value)
+                 scale: int, opacity: int, entity: str = None, conditions: list = None):
+        super().__init__(attribute, operator, value, entity, conditions)
         self.icon: str = icon
         self.color: tuple[int, int, int, int] = color
         self.scale: int = scale
@@ -24,11 +24,9 @@ class IconCustomization(Customization):
 
     @classmethod
     def from_dict(cls, customization: dict):
-        return cls(customization[customization_const.CONDITION][customization_const.ATTRIBUTE],
-                   customization[customization_const.CONDITION][customization_const.OPERATOR],
-                   customization[customization_const.CONDITION][customization_const.VALUE],
-                   customization[icon_const.CUSTOM_ICON], customization[icon_const.CUSTOM_COLOR],
-                   customization[icon_const.CUSTOM_SCALE], customization[icon_const.CUSTOM_OPACITY])
+        return cls(**cls.parse_condition(customization[customization_const.CONDITION]),
+                   icon=customization[icon_const.CUSTOM_ICON], color=customization[icon_const.CUSTOM_COLOR],
+                   scale=customization[icon_const.CUSTOM_SCALE], opacity=customization[icon_const.CUSTOM_OPACITY])
 
     def get_icon(self) -> str:
         """
@@ -64,11 +62,7 @@ class IconCustomization(Customization):
         :return: this customization as a dict
         """
         return {
-            customization_const.CONDITION: {
-                customization_const.ATTRIBUTE: self.attribute,
-                customization_const.OPERATOR: self.operator,
-                customization_const.VALUE: self.value
-            },
+            customization_const.CONDITION: self.export_condition(),
             icon_const.CUSTOM_ICON: self.icon,
             icon_const.CUSTOM_COLOR: self.color,
             icon_const.CUSTOM_SCALE: self.scale,
