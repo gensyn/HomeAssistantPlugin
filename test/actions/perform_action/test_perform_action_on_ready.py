@@ -15,7 +15,7 @@ from HomeAssistantPlugin.actions.perform_action.perform_action import PerformAct
 class TestPerformActionOnReady(unittest.TestCase):
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
-    @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.on_ready')
+    @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_ready')
     @patch.object(PerformAction, '_load_actions')
     @patch.object(PerformAction, '_reload')
     def test_on_ready_not_connected(self, reload_mock, load_actions_mock, on_ready_mock, _):
@@ -27,14 +27,15 @@ class TestPerformActionOnReady(unittest.TestCase):
 
         instance = PerformAction()
         instance.plugin_base = plugin_base_mock
-        instance.on_ready()
+        instance.initialized = True
+        instance._on_ready()
 
         on_ready_mock.assert_called_once()
         load_actions_mock.assert_not_called()
         reload_mock.assert_not_called()
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
-    @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.on_ready')
+    @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore._on_ready')
     @patch.object(PerformAction, '_load_actions')
     @patch.object(PerformAction, '_reload')
     def test_on_ready_success(self, reload_mock, load_actions_mock, on_ready_mock, _):
@@ -46,9 +47,9 @@ class TestPerformActionOnReady(unittest.TestCase):
 
         instance = PerformAction()
         instance.plugin_base = plugin_base_mock
-        instance.on_ready()
+        instance.initialized = True
+        instance._on_ready()
 
         on_ready_mock.assert_called_once()
         load_actions_mock.assert_called_once()
         reload_mock.assert_called_once()
-

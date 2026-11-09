@@ -20,9 +20,7 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
     def test_load_actions_action_in_actions(self, load_parameters_mock, _):
         settings_mock = Mock()
         settings_mock.get_action = Mock(return_value='test_action')
-
-        domain_combo_mock = Mock()
-        domain_combo_mock.get_selected_item = Mock(return_value='test_domain')
+        settings_mock.get_domain = Mock(return_value='test_domain')
 
         action_combo_mock = Mock()
         action_combo_mock.populate = Mock()
@@ -35,17 +33,16 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
         instance.initialized = True
         instance.settings = settings_mock
         instance.plugin_base = plugin_base_mock
-        instance.domain_combo = domain_combo_mock
         instance.action_combo = action_combo_mock
         instance._load_actions()
 
         settings_mock.get_action.assert_called_once()
-        domain_combo_mock.get_selected_item.assert_called_once()
-        plugin_base_mock.backend.get_actions.assert_called_once_with(domain_combo_mock.get_selected_item.return_value)
+        settings_mock.get_domain.assert_called_once()
+        plugin_base_mock.backend.get_actions.assert_called_once_with('test_domain')
         action_combo_mock.populate.assert_called_once_with(
             ['test_action', 'another_action'],
             'test_action',
-            update_settings=True,
+            update_settings=False,
             trigger_callback=False
         )
         load_parameters_mock.assert_called_once_with(instance)
@@ -56,9 +53,7 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
     def test_load_actions_action_not_in_actions(self, load_parameters_mock, _):
         settings_mock = Mock()
         settings_mock.get_action = Mock(return_value='test_action')
-
-        domain_combo_mock = Mock()
-        domain_combo_mock.get_selected_item = Mock(return_value='test_domain')
+        settings_mock.get_domain = Mock(return_value='test_domain')
 
         action_combo_mock = Mock()
         action_combo_mock.populate = Mock()
@@ -71,17 +66,16 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
         instance.initialized = True
         instance.settings = settings_mock
         instance.plugin_base = plugin_base_mock
-        instance.domain_combo = domain_combo_mock
         instance.action_combo = action_combo_mock
         instance._load_actions()
 
         settings_mock.get_action.assert_called_once()
-        domain_combo_mock.get_selected_item.assert_called_once()
-        plugin_base_mock.backend.get_actions.assert_called_once_with(domain_combo_mock.get_selected_item.return_value)
+        settings_mock.get_domain.assert_called_once()
+        plugin_base_mock.backend.get_actions.assert_called_once_with('test_domain')
         action_combo_mock.populate.assert_called_once_with(
             ['one_action', 'another_action', 'test_action'],
             'test_action',
-            update_settings=True,
+            update_settings=False,
             trigger_callback=False
         )
         load_parameters_mock.assert_called_once_with(instance)
@@ -93,9 +87,7 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
     def test_load_actions_none_action(self, load_parameters_mock, _):
         settings_mock = Mock()
         settings_mock.get_action = Mock(return_value=None)
-
-        domain_combo_mock = Mock()
-        domain_combo_mock.get_selected_item = Mock(return_value='test_domain')
+        settings_mock.get_domain = Mock(return_value='test_domain')
 
         action_combo_mock = Mock()
         action_combo_mock.populate = Mock()
@@ -108,14 +100,13 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
         instance.initialized = True
         instance.settings = settings_mock
         instance.plugin_base = plugin_base_mock
-        instance.domain_combo = domain_combo_mock
         instance.action_combo = action_combo_mock
         instance._load_actions()
 
         action_combo_mock.populate.assert_called_once_with(
             ['one_action', 'another_action'],
             None,
-            update_settings=True,
+            update_settings=False,
             trigger_callback=False
         )
         load_parameters_mock.assert_called_once_with(instance)

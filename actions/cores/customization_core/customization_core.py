@@ -177,6 +177,8 @@ class CustomizationCore(BaseCore):
         Track all entities used in customization conditions and untrack those that are not used anymore.
         """
         backend = self.plugin_base.backend
+        if not backend.is_connected():
+            return
         entities = self._get_condition_entities()
 
         for entity in self._condition_entities - entities:
