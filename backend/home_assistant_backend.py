@@ -224,7 +224,6 @@ class HomeAssistantBackend:
 
         if not success:
             log.error(backend_const.ERROR_STATES.format(error))
-            self._entities = {}
             return
 
         states: list[dict] = result
