@@ -24,7 +24,9 @@ class HomeAssistantBackend:
         self._connection_status_callback: Callable = lambda _1, _2=None: None
         self._keep_alive_thread: Optional[Thread] = None
         self._retry_connect_thread: Optional[Thread] = None
-        self._action_ready_callbacks: set[Callable] = set()
+        # Ordered on purpose: a dict keeps the registration order, so actions are re-initialised
+        # deterministically instead of in the arbitrary order a set would produce
+        self._action_ready_callbacks: dict[Callable, None] = {}
 
         self._host: str = backend_const.EMPTY_STRING
         self.set_host(host)
@@ -116,7 +118,7 @@ class HomeAssistantBackend:
         self._load_actions()
         self._readd_tracked_entities()
 
-        for ready in self._action_ready_callbacks:
+        for ready in list(self._action_ready_callbacks):
             GLib.idle_add(ready)
 
     def _on_event_message(self, message: dict) -> None:
@@ -173,7 +175,7 @@ class HomeAssistantBackend:
             # the call comes from an obsolete websocket instance
             return
         log.info(backend_const.INFO_DISCONNECTED)
-        for ready in self._action_ready_callbacks:
+        for ready in list(self._action_ready_callbacks):
             GLib.idle_add(ready)
         sleep(backend_const.RECONNECT_INTERVAL)
         if websocket == self._websocket:
@@ -215,6 +217,9 @@ class HomeAssistantBackend:
 
     def _load_entities(self) -> None:
         """Loads the domains and entities from Home Assistant."""
+        if not self.is_connected():
+            return
+
         success, result, error = self._websocket.send_and_recv(backend_const.GET_STATES)
 
         if not success:
@@ -266,10 +271,15 @@ class HomeAssistantBackend:
             return []
         if self._entities:
             return list(self._entities.get(domain, {}).keys())
+        if not self.is_connected():
+            return []
         self._load_entities()
         return list(self._entities.get(domain, {}).keys())
 
     def _load_actions(self) -> None:
+        if not self.is_connected():
+            return
+
         success, result, error = self._websocket.send_and_recv(backend_const.GET_SERVICES)
 
         if not success:
@@ -281,7 +291,11 @@ class HomeAssistantBackend:
 
     def get_actions(self, domain: str) -> dict[str, dict[str, Any]]:
         """Return all actions known to Home Assistant for the domain."""
+        if not domain:
+            return {}
         if not self._actions:
+            if not self.is_connected():
+                return {}
             self._load_actions()
         if not self._actions:
             return {}
@@ -304,16 +318,54 @@ class HomeAssistantBackend:
 
     def add_action_ready_callback(self, on_ready: Callable) -> None:
         """Register a callback to be called when the action is ready."""
-        self._action_ready_callbacks.add(on_ready)
+        self._action_ready_callbacks[on_ready] = None
 
     def remove_action_ready_callback(self, on_ready: Callable) -> None:
         """Deregister a callback that was registered to be called when the action is ready."""
-        self._action_ready_callbacks.discard(on_ready)
+        self._action_ready_callbacks.pop(on_ready, None)
+
+    def _refresh_entity(self, entity_id: str, action_entity_updated: Callable) -> None:
+        """Request the current state from Home Assistant without blocking and update the cache with the response.
+
+        The websocket receive loop delivers the response, which is matched by message ID."""
+        domain = entity_id.split(backend_const.DOT)[0]
+
+        def on_response(success: bool, result: Any, error: Any) -> None:
+            if not success:
+                log.error(backend_const.ERROR_STATES.format(error))
+                return
+
+            entity_settings = self._entities.get(domain, {}).get(entity_id)
+            if entity_settings is None:
+                return
+
+            state = backend_const.NA
+            attributes = {}
+            for entity in result:
+                if entity.get(backend_const.ENTITY_ID) == entity_id:
+                    state = entity.get(backend_const.STATE, backend_const.OFF)
+                    attributes = entity.get(backend_const.ATTRIBUTES, {})
+                    break
+
+            entity_settings[backend_const.STATE] = state
+            entity_settings[backend_const.ATTRIBUTES] = attributes
+            def notify_if_tracked():
+                current_settings = self._entities.get(domain, {}).get(entity_id, {})
+                if action_entity_updated in current_settings.get(backend_const.ACTIONS, set()):
+                    action_entity_updated()
+                return False
+
+            GLib.idle_add(notify_if_tracked)
+
+        self._websocket.send_request(backend_const.GET_STATES, on_response)
 
     def add_tracked_entity(
-            self, entity_id: str, action_entity_updated: Callable
+            self, entity_id: str, action_entity_updated: Callable, use_cache: bool = True
     ) -> None:
-        """Register an entity with the Home Assistant websocket to be notified when the entity is updated."""
+        """Register an entity with the Home Assistant websocket to be notified when the entity is updated.
+
+        If use_cache is False, the entity's current state is requested from Home Assistant asynchronously and
+        action_entity_updated is called once the cached state has been updated."""
         if not entity_id:
             return
 
@@ -329,38 +381,38 @@ class HomeAssistantBackend:
             # entity doesn't exist (anymore)
             return
 
-        if action_entity_updated in entity_settings.get(backend_const.ACTIONS, set()):
-            # action already registered
-            return
+        if action_entity_updated not in entity_settings.get(backend_const.ACTIONS, set()):
+            entity_settings.get(backend_const.ACTIONS).add(action_entity_updated)
 
-        entity_settings.get(backend_const.ACTIONS).add(action_entity_updated)
+            if entity_settings.get(backend_const.SUBSCRIPTION_ID) <= -1:
+                message = self._websocket.create_message(backend_const.SUBSCRIBE_TRIGGER)
+                message[backend_const.TRIGGER] = {backend_const.PLATFORM: backend_const.STATE,
+                                                  backend_const.ENTITY_ID: entity_id}
+                self._websocket.send(message)
+                entity_settings[backend_const.SUBSCRIPTION_ID] = message[backend_const.ID]
 
-        if entity_settings.get(backend_const.SUBSCRIPTION_ID) > -1:
-            # already subscribed to entity events
-            return
-
-        message = self._websocket.create_message(backend_const.SUBSCRIBE_TRIGGER)
-        message[backend_const.TRIGGER] = {backend_const.PLATFORM: backend_const.STATE,
-                                          backend_const.ENTITY_ID: entity_id}
-        self._websocket.send(message)
-        entity_settings[backend_const.SUBSCRIPTION_ID] = message[backend_const.ID]
+        if not use_cache:
+            # request after subscribing so no state change is missed in between
+            self._refresh_entity(entity_id, action_entity_updated)
 
     def remove_tracked_entity(self, entity_id: str, action_entity_updated: Callable) -> None:
         """Deregister a previously registered entity."""
         if not entity_id:
             return
 
-        if not self.is_connected():
-            return
-
         domain = entity_id.split(backend_const.DOT)[0]
         entity_settings = self._entities.get(domain, {}).get(entity_id)
         if entity_settings is None:
             return
+        # Drop the callback even while disconnected - otherwise a removed action stays
+        # subscribed and keeps being notified once the connection comes back
         entity_settings.get(backend_const.ACTIONS, set()).discard(action_entity_updated)
 
         if len(entity_settings.get(backend_const.ACTIONS, set())) > 0:
             # the entity is still attached to another key, so keep the trigger subscription
+            return
+
+        if not self.is_connected() or entity_settings.get(backend_const.SUBSCRIPTION_ID, -1) < 0:
             return
 
         message = self._websocket.create_message(backend_const.UNSUBSCRIBE_EVENTS)

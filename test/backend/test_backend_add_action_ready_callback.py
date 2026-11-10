@@ -19,5 +19,4 @@ class TestBackendAddActionReadyCallback(unittest.TestCase):
         instance.add_action_ready_callback("123")
         instance.add_action_ready_callback("321")
 
-        self.assertEqual({"123", "321"}, instance._action_ready_callbacks)
-
+        self.assertEqual({"123": None, "321": None}, instance._action_ready_callbacks)

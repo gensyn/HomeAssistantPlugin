@@ -35,7 +35,8 @@ class TestBackendGetEntities(unittest.TestCase):
         self.assertEqual(["sensor.temperature", "sensor.humidity"], result)
 
     @patch.object(HomeAssistantBackend, '_load_entities')
-    def test_get_entities_load_entities(self, load_entities_mock):
+    @patch.object(HomeAssistantBackend, 'is_connected', return_value=True)
+    def test_get_entities_load_entities(self, _, load_entities_mock):
         entities = {
             "light": {"light.living_room": {backend_const.STATE: "on", backend_const.ATTRIBUTES: {"friendly_name": "Living Room Light"}, backend_const.ACTIONS: {"abc": "123"}, backend_const.SUBSCRIPTION_ID: 2}},
             "sensor": {
@@ -51,4 +52,3 @@ class TestBackendGetEntities(unittest.TestCase):
         self.assertEqual(["light.living_room"], result)
         result = instance.get_entities("sensor")
         self.assertEqual(["sensor.temperature", "sensor.humidity"], result)
-

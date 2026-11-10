@@ -142,7 +142,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         instance.plugin_base = plugin_base_mock
         instance.set_enabled_disabled()
 
-        settings_mock.get_domain.assert_called_once()
+        self.assertEqual(2, settings_mock.get_domain.call_count)
         action_combo_mock.widget.set_sensitive.assert_called_once_with(True)
         action_combo_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         parameters_expander_mock.widget.set_sensitive.assert_called_once_with(False)
@@ -150,8 +150,8 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         parameters_expander_mock.widget.set_subtitle.assert_called_once_with(
             locale_manager[perform_const.LABEL_SERVICE_NO_PARAMETERS])
         settings_mock.get_action.assert_called_once()
-        domain_combo_mock.get_selected_item.assert_called_once()
-        plugin_base_mock.backend.get_actions.assert_called_once_with(domain_combo_mock.get_selected_item.return_value)
+        domain_combo_mock.get_selected_item.assert_not_called()
+        plugin_base_mock.backend.get_actions.assert_called_once_with("light")
         entity_combo_mock.widget.set_sensitive.assert_called_once_with(False)
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
@@ -195,15 +195,15 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         instance.plugin_base = plugin_base_mock
         instance.set_enabled_disabled()
 
-        settings_mock.get_domain.assert_called_once()
+        self.assertEqual(2, settings_mock.get_domain.call_count)
         action_combo_mock.widget.set_sensitive.assert_called_once_with(True)
         action_combo_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         parameters_expander_mock.widget.set_sensitive.assert_called_once_with(True)
         parameters_expander_mock.set_expanded.assert_called_once_with(True)
         parameters_expander_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         settings_mock.get_action.assert_called_once()
-        domain_combo_mock.get_selected_item.assert_called_once()
-        plugin_base_mock.backend.get_actions.assert_called_once_with(domain_combo_mock.get_selected_item.return_value)
+        domain_combo_mock.get_selected_item.assert_not_called()
+        plugin_base_mock.backend.get_actions.assert_called_once_with("light")
         entity_combo_mock.widget.set_sensitive.assert_called_once_with(False)
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
@@ -247,15 +247,15 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         instance.plugin_base = plugin_base_mock
         instance.set_enabled_disabled()
 
-        settings_mock.get_domain.assert_called_once()
+        self.assertEqual(2, settings_mock.get_domain.call_count)
         action_combo_mock.widget.set_sensitive.assert_called_once_with(True)
         action_combo_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         parameters_expander_mock.widget.set_sensitive.assert_called_once_with(True)
         parameters_expander_mock.set_expanded.assert_called_once_with(True)
         parameters_expander_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         settings_mock.get_action.assert_called_once()
-        domain_combo_mock.get_selected_item.assert_called_once()
-        plugin_base_mock.backend.get_actions.assert_called_once_with(domain_combo_mock.get_selected_item.return_value)
+        domain_combo_mock.get_selected_item.assert_not_called()
+        plugin_base_mock.backend.get_actions.assert_called_once_with("light")
         entity_combo_mock.widget.set_sensitive.assert_called_once_with(True)
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
@@ -299,14 +299,13 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         instance.plugin_base = plugin_base_mock
         instance.set_enabled_disabled()
 
-        settings_mock.get_domain.assert_called_once()
+        self.assertEqual(2, settings_mock.get_domain.call_count)
         action_combo_mock.widget.set_sensitive.assert_called_once_with(True)
         action_combo_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         parameters_expander_mock.widget.set_sensitive.assert_called_once_with(True)
         parameters_expander_mock.set_expanded.assert_called_once_with(True)
         parameters_expander_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         settings_mock.get_action.assert_called_once()
-        domain_combo_mock.get_selected_item.assert_called_once()
-        plugin_base_mock.backend.get_actions.assert_called_once_with(domain_combo_mock.get_selected_item.return_value)
+        domain_combo_mock.get_selected_item.assert_not_called()
+        plugin_base_mock.backend.get_actions.assert_called_once_with("light")
         entity_combo_mock.widget.set_sensitive.assert_called_once_with(True)
-

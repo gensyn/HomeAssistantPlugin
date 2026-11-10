@@ -34,6 +34,7 @@ class HomeAssistantWebsocket(WebSocketApp):
         self._on_close_callback = on_close
         self.connected = False
         self._message_id: int = 0
+        self._pending_requests: dict[int, Callable] = {}
 
     def run_forever(self) -> None:
         """Start the WebSocketApp."""
@@ -65,6 +66,7 @@ class HomeAssistantWebsocket(WebSocketApp):
     def _on_close(self, _, __, ___) -> None:
         """Execute the respective callback when the connection to Home Assistant was closed."""
         self.connected = False
+        self._pending_requests.clear()
         self._on_close_callback(self)
 
     def _on_message(self, _, message: str) -> None:
@@ -78,6 +80,16 @@ class HomeAssistantWebsocket(WebSocketApp):
 
         if backend_const.FIELD_EVENT == message_type:
             self._on_event_message(message_dict)
+            return
+
+        if backend_const.FIELD_RESULT == message_type:
+            on_response = self._pending_requests.pop(message_dict.get(backend_const.ID), None)
+            if on_response is not None:
+                on_response(
+                    message_dict.get(backend_const.FIELD_SUCCESS, False),
+                    message_dict.get(backend_const.FIELD_RESULT, backend_const.EMPTY_STRING),
+                    message_dict.get(backend_const.FIELD_ERROR, backend_const.EMPTY_STRING),
+                )
             return
 
         if backend_const.AUTH_REQUIRED == message_type:
@@ -104,6 +116,18 @@ class HomeAssistantWebsocket(WebSocketApp):
         result = _get_field_from_message(response, backend_const.FIELD_RESULT)
         error = _get_field_from_message(response, backend_const.FIELD_ERROR)
         return success, result, error
+
+    def send_request(self, message_type: str, on_response: Callable) -> bool:
+        """Send a request while connected and call on_response(success, result, error) from the receive loop.
+
+        The response is matched by its message ID, so the receive loop remains the only reader of the socket."""
+        if not self.connected:
+            return False
+
+        message = self.create_message(message_type)
+        self._pending_requests[message[backend_const.ID]] = on_response
+        self.send(message)
+        return True
 
     def create_message(self, message_type: str) -> dict[str, Any]:
         """Create a message that can be sent to the Home Assistant websocket."""

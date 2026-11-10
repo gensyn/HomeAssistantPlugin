@@ -28,20 +28,25 @@ class BaseSettings:
         Get the domain.
         :return: the domain
         """
-        return self._action.get_settings()[const.SETTING_ENTITY][const.SETTING_DOMAIN]
+        return self._action.get_settings().get(const.SETTING_ENTITY, {}).get(const.SETTING_DOMAIN)
 
     def get_entity(self) -> str:
         """
         Get the entity.
         :return: the entity
         """
-        return self._action.get_settings()[const.SETTING_ENTITY][const.SETTING_ENTITY]
+        return self._action.get_settings().get(const.SETTING_ENTITY, {}).get(const.SETTING_ENTITY)
 
     def reset(self, domain: str) -> None:
         """
         Delete the settings and keeps only the UUID. The given domain is also set.
+        A stored domain is never replaced by an empty one - that would only ever happen when the
+        backend is not connected and the combo has nothing to offer.
         :param domain: the new domain
         """
+        if not domain and self.get_domain():
+            return
+
         settings = self._action.get_settings()
         settings[const.SETTING_ENTITY][const.SETTING_DOMAIN] = domain
         settings[const.SETTING_ENTITY][const.SETTING_ENTITY] = const.EMPTY_STRING

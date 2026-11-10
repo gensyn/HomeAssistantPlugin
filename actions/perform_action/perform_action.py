@@ -26,9 +26,9 @@ class PerformAction(BaseCore):
         self.parameters_expander = None
         super().__init__(settings_implementation=PerformActionSettings, track_entity=False, *args, **kwargs)
 
-    def on_ready(self) -> None:
+    def _on_ready(self) -> None:
         """Set up action when StreamController has finished loading."""
-        super().on_ready()
+        super()._on_ready()
 
         if not self.plugin_base.backend.is_connected():
             return
@@ -145,14 +145,15 @@ class PerformAction(BaseCore):
         Load actions from Home Assistant.
         """
         action = self.settings.get_action()
-        actions_dict = self.plugin_base.backend.get_actions(
-            str(self.domain_combo.get_selected_item())
-        )
+        actions_dict = self.plugin_base.backend.get_actions(self.settings.get_domain())
         actions = list(actions_dict.keys())
+        if not actions and not self.plugin_base.backend.is_connected():
+            # Nothing to populate from - keep whatever is currently stored and shown
+            return
         if action is not None and action not in actions:
             actions.append(action)
         actions = [a for a in actions if a is not None]
-        self.action_combo.populate(actions, action, update_settings=True, trigger_callback=False)
+        self.action_combo.populate(actions, action, update_settings=False, trigger_callback=False)
         parameters_helper.load_parameters(self)
 
     @requires_initialization
@@ -187,9 +188,7 @@ class PerformAction(BaseCore):
                 self.parameters_expander.widget.set_subtitle(perform_const.EMPTY_STRING)
 
             action = self.settings.get_action()
-            actions = self.plugin_base.backend.get_actions(
-                str(self.domain_combo.get_selected_item())
-            )
+            actions = self.plugin_base.backend.get_actions(self.settings.get_domain())
             has_target = bool(actions.get(action, {}).get(perform_const.TARGET))
             self.entity_combo.widget.set_sensitive(has_target)
 
