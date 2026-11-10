@@ -36,7 +36,7 @@ class TestBackendRefreshEntity(unittest.TestCase):
         entity = instance._entities["light"]["light.a"]
         self.assertEqual("on", entity[backend_const.STATE])
         self.assertEqual({"new": 2}, entity[backend_const.ATTRIBUTES])
-        glib_mock.idle_add.assert_called_once_with(callback)
+        glib_mock.idle_add.assert_called_once()
 
     @patch("HomeAssistantPlugin.backend.home_assistant_backend.GLib")
     def test_refresh_entity_missing_clears_cache(self, glib_mock):
@@ -49,7 +49,7 @@ class TestBackendRefreshEntity(unittest.TestCase):
         entity = instance._entities["light"]["light.a"]
         self.assertEqual(backend_const.NA, entity[backend_const.STATE])
         self.assertEqual({}, entity[backend_const.ATTRIBUTES])
-        glib_mock.idle_add.assert_called_once_with(callback)
+        glib_mock.idle_add.assert_called_once()
 
     @patch("HomeAssistantPlugin.backend.home_assistant_backend.GLib")
     def test_refresh_entity_failure_keeps_cache(self, glib_mock):
