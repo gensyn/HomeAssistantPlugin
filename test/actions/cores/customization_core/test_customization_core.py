@@ -507,7 +507,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance._condition_entities = {"light.old", "light.kept"}
         instance._get_condition_entities = Mock(return_value={"light.kept", "light.new"})
 
-        instance._update_condition_entities()
+        instance._update_condition_entities(use_cache=False)
 
         instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(
             "light.old", instance._on_condition_entity_changed)
