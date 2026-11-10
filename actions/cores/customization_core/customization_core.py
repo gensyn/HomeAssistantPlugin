@@ -93,7 +93,7 @@ class CustomizationCore(BaseCore):
         else:
             self.settings.add_customization(customization)
 
-        self._update_condition_entities()
+        self._update_condition_entities(use_cache=False)
         self.refresh()
 
     def _on_delete_customization(self, _, index: int):
@@ -172,7 +172,7 @@ class CustomizationCore(BaseCore):
             entities.update(customization.get_entities())
         return entities
 
-    def _update_condition_entities(self) -> None:
+    def _update_condition_entities(self, use_cache=True) -> None:
         """
         Track all entities used in customization conditions and untrack those that are not used anymore.
         """
@@ -185,7 +185,7 @@ class CustomizationCore(BaseCore):
             backend.remove_tracked_entity(entity, self._on_condition_entity_changed)
 
         for entity in entities:
-            backend.add_tracked_entity(entity, self._on_condition_entity_changed, use_cache=False)
+            backend.add_tracked_entity(entity, self._on_condition_entity_changed, use_cache=use_cache)
 
         self._condition_entities = entities
 
