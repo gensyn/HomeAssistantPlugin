@@ -2,6 +2,8 @@
 
 import json
 from ssl import CERT_NONE, SSLEOFError
+from queue import Empty, Queue
+from threading import current_thread, Thread
 from time import sleep
 from typing import Any, Callable
 
@@ -17,6 +19,8 @@ ERRORS_TO_EXCEPT = (
     BrokenPipeError,
     SSLEOFError,
 )
+
+RESPONSE_TIMEOUT = 10
 
 
 class HomeAssistantWebsocket(WebSocketApp):
@@ -34,13 +38,15 @@ class HomeAssistantWebsocket(WebSocketApp):
         self._on_close_callback = on_close
         self.connected = False
         self._message_id: int = 0
-        self._pending_requests: dict[int, Callable] = {}
+        self._ws_thread: Thread | None = None
+        self._pending: dict[int, Queue] = {}
 
     def run_forever(self) -> None:
         """Start the WebSocketApp."""
         ssl_opt = {}
         if not self._verify_certificate:
             ssl_opt[backend_const.CERT_REQS] = CERT_NONE
+        self._ws_thread = current_thread()
         super().run_forever(sslopt=ssl_opt)
 
     def _auth(self) -> None:
@@ -78,6 +84,11 @@ class HomeAssistantWebsocket(WebSocketApp):
         message_dict = json.loads(message)
         message_type = message_dict.get(backend_const.FIELD_TYPE)
 
+        pending = self._pending.get(message_dict.get(backend_const.ID))
+        if pending is not None and backend_const.FIELD_RESULT == message_type:
+            pending.put(message)
+            return
+
         if backend_const.FIELD_EVENT == message_type:
             self._on_event_message(message_dict)
             return
@@ -110,8 +121,22 @@ class HomeAssistantWebsocket(WebSocketApp):
         if check_connected and not self.connected:
             return False, backend_const.EMPTY_STRING, backend_const.EMPTY_STRING
 
-        self.send(self.create_message(message), check_connected)
-        response = self.sock.recv()
+        message_dict = self.create_message(message)
+        if self._ws_thread is None or current_thread() is self._ws_thread:
+            self.send(message_dict, check_connected)
+            response = self.sock.recv()
+        else:
+            # another thread is reading from the socket; wait for it to hand over the response
+            message_id = message_dict[backend_const.ID]
+            queue: Queue = Queue()
+            self._pending[message_id] = queue
+            try:
+                self.send(message_dict, check_connected)
+                response = queue.get(timeout=RESPONSE_TIMEOUT)
+            except Empty:
+                return False, backend_const.EMPTY_STRING, backend_const.EMPTY_STRING
+            finally:
+                self._pending.pop(message_id, None)
         success = _get_field_from_message(response, backend_const.FIELD_SUCCESS)
         result = _get_field_from_message(response, backend_const.FIELD_RESULT)
         error = _get_field_from_message(response, backend_const.FIELD_ERROR)
