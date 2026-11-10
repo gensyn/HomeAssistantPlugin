@@ -39,6 +39,7 @@ class HomeAssistantWebsocket(WebSocketApp):
         self.connected = False
         self._message_id: int = 0
         self._ws_thread: Thread | None = None
+        self._pending_requests: dict[int, Callable] = {}
         self._pending: dict[int, Queue] = {}
 
     def run_forever(self) -> None:
