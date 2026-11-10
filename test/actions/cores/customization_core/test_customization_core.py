@@ -33,7 +33,7 @@ class TestCustomizationCore(unittest.TestCase):
         self.assertEqual(instance.customization_implementation, customization_implementation)
         self.assertEqual(instance.row_implementation, row_implementation)
 
-    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_ready')
+    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._on_ready')
     def test_on_ready_not_connected(self, super_on_ready_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance._condition_entities = set()
@@ -44,14 +44,14 @@ class TestCustomizationCore(unittest.TestCase):
         instance.initialized = False
         instance._reload = Mock()
 
-        instance.on_ready()
+        instance._on_ready()
 
         super_on_ready_mock.assert_called_once()
         instance.refresh.assert_called_once()
         self.assertFalse(instance.initialized)
         instance._reload.assert_not_called()
 
-    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_ready')
+    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._on_ready')
     def test_on_ready_connected(self, super_on_ready_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance._condition_entities = set()
@@ -62,7 +62,7 @@ class TestCustomizationCore(unittest.TestCase):
         instance.initialized = False
         instance._reload = Mock()
 
-        instance.on_ready()
+        instance._on_ready()
 
         super_on_ready_mock.assert_called_once()
         instance.refresh.assert_not_called()
@@ -507,13 +507,13 @@ class TestCustomizationCore(unittest.TestCase):
         instance._condition_entities = {"light.old", "light.kept"}
         instance._get_condition_entities = Mock(return_value={"light.kept", "light.new"})
 
-        instance._update_condition_entities()
+        instance._update_condition_entities(use_cache=False)
 
         instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(
             "light.old", instance._on_condition_entity_changed)
         instance.plugin_base.backend.add_tracked_entity.assert_has_calls(
-            [call("light.kept", instance._on_condition_entity_changed),
-             call("light.new", instance._on_condition_entity_changed)], any_order=True)
+            [call("light.kept", instance._on_condition_entity_changed, use_cache=False),
+             call("light.new", instance._on_condition_entity_changed, use_cache=False)], any_order=True)
         self.assertEqual({"light.kept", "light.new"}, instance._condition_entities)
 
     def test_on_condition_entity_changed_ignores_state(self):
@@ -539,7 +539,7 @@ class TestCustomizationCore(unittest.TestCase):
             "light.a", instance._on_condition_entity_changed)
         self.assertEqual(set(), instance._condition_entities)
 
-    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore.on_ready')
+    @patch('HomeAssistantPlugin.actions.cores.customization_core.customization_core.BaseCore._on_ready')
     def test_on_ready_connected_tracks_condition_entities(self, super_on_ready_mock):
         instance = CustomizationCore.__new__(CustomizationCore)
         instance.plugin_base = Mock()
@@ -547,6 +547,6 @@ class TestCustomizationCore(unittest.TestCase):
         instance._update_condition_entities = Mock()
         instance._reload = Mock()
 
-        instance.on_ready()
+        instance._on_ready()
 
         instance._update_condition_entities.assert_called_once()

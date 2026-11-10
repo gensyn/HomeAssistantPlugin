@@ -24,9 +24,9 @@ class TestBaseCoreLoadEntities(unittest.TestCase):
 
         settings_mock = Mock()
         settings_mock.get_entity = Mock(return_value=entity)
+        settings_mock.get_domain = Mock(return_value=domain)
 
         domain_combo_mock = Mock()
-        domain_combo_mock.get_selected_item = Mock(return_value=domain)
 
         entity_combo_mock = Mock()
         entity_combo_mock.populate = Mock()
@@ -41,7 +41,7 @@ class TestBaseCoreLoadEntities(unittest.TestCase):
         instance._load_entities()
 
         settings_mock.get_entity.assert_called_once()
-        domain_combo_mock.get_selected_item.assert_called_once()
+        settings_mock.get_domain.assert_called_once()
         instance.plugin_base.backend.get_entities.assert_called_once_with(domain)
         entity_combo_mock.populate.assert_called_once_with(entities_sorted, entity, trigger_callback=False)
 
@@ -55,9 +55,9 @@ class TestBaseCoreLoadEntities(unittest.TestCase):
 
         settings_mock = Mock()
         settings_mock.get_entity = Mock(return_value=entity)
+        settings_mock.get_domain = Mock(return_value=domain)
 
         domain_combo_mock = Mock()
-        domain_combo_mock.get_selected_item = Mock(return_value=domain)
 
         entity_combo_mock = Mock()
         entity_combo_mock.populate = Mock()
@@ -71,7 +71,7 @@ class TestBaseCoreLoadEntities(unittest.TestCase):
         instance._load_entities()
 
         settings_mock.get_entity.assert_called_once()
-        domain_combo_mock.get_selected_item.assert_called_once()
+        settings_mock.get_domain.assert_called_once()
         instance.plugin_base.backend.get_entities.assert_called_once_with(domain)
         entity_combo_mock.populate.assert_called_once_with(entities_sorted, entity, trigger_callback=False)
 

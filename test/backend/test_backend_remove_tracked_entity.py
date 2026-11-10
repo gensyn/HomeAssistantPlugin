@@ -46,7 +46,7 @@ class TestBackendRemoveTrackedEntity(unittest.TestCase):
 
         instance.remove_tracked_entity("light.living_room", "123")
 
-        self.assertEqual({"123"}, instance._entities["light"]["light.living_room"][backend_const.ACTIONS])
+        self.assertEqual(set(), instance._entities["light"]["light.living_room"][backend_const.ACTIONS])
         self.assertEqual(2, instance._entities["light"]["light.living_room"][backend_const.SUBSCRIPTION_ID])
 
     @patch.object(HomeAssistantBackend, 'connect')
@@ -130,4 +130,3 @@ class TestBackendRemoveTrackedEntity(unittest.TestCase):
 
         self.assertEqual({"321"}, instance._entities["light"]["light.living_room"][backend_const.ACTIONS])
         self.assertEqual(2, instance._entities["light"]["light.living_room"][backend_const.SUBSCRIPTION_ID])
-

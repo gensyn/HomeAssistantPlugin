@@ -26,7 +26,7 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
         instance.on_change_entity(None, new_entity_id, old_entity_id)
 
         instance.plugin_base.backend.remove_tracked_entity.assert_not_called()
-        instance.plugin_base.backend.add_tracked_entity.assert_called_once_with(new_entity_id, instance.refresh)
+        instance.plugin_base.backend.add_tracked_entity.assert_called_once_with(new_entity_id, instance.refresh, use_cache=False)
         set_enabled_disabled_mock.assert_called_once()
 
     @patch.object(BaseCore, "create_ui_elements")
@@ -73,6 +73,6 @@ class TestBaseCoreOnChangeDomain(unittest.TestCase):
 
         instance.plugin_base.backend.remove_tracked_entity.assert_called_once_with(old_entity_id,
                                                                                    instance.refresh)
-        instance.plugin_base.backend.add_tracked_entity.assert_called_once_with(new_entity_id, instance.refresh)
+        instance.plugin_base.backend.add_tracked_entity.assert_called_once_with(new_entity_id, instance.refresh, use_cache=False)
         set_enabled_disabled_mock.assert_called_once()
 

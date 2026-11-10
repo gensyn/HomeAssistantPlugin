@@ -314,10 +314,48 @@ class HomeAssistantBackend:
         """Deregister a callback that was registered to be called when the action is ready."""
         self._action_ready_callbacks.pop(on_ready, None)
 
+    def _refresh_entity(self, entity_id: str, action_entity_updated: Callable) -> None:
+        """Request the current state from Home Assistant without blocking and update the cache with the response.
+
+        The websocket receive loop delivers the response, which is matched by message ID."""
+        domain = entity_id.split(backend_const.DOT)[0]
+
+        def on_response(success: bool, result: Any, error: Any) -> None:
+            if not success:
+                log.error(backend_const.ERROR_STATES.format(error))
+                return
+
+            entity_settings = self._entities.get(domain, {}).get(entity_id)
+            if entity_settings is None:
+                return
+
+            state = backend_const.NA
+            attributes = {}
+            for entity in result:
+                if entity.get(backend_const.ENTITY_ID) == entity_id:
+                    state = entity.get(backend_const.STATE, backend_const.OFF)
+                    attributes = entity.get(backend_const.ATTRIBUTES, {})
+                    break
+
+            entity_settings[backend_const.STATE] = state
+            entity_settings[backend_const.ATTRIBUTES] = attributes
+            def notify_if_tracked():
+                current_settings = self._entities.get(domain, {}).get(entity_id, {})
+                if action_entity_updated in current_settings.get(backend_const.ACTIONS, set()):
+                    action_entity_updated()
+                return False
+
+            GLib.idle_add(notify_if_tracked)
+
+        self._websocket.send_request(backend_const.GET_STATES, on_response)
+
     def add_tracked_entity(
-            self, entity_id: str, action_entity_updated: Callable
+            self, entity_id: str, action_entity_updated: Callable, use_cache: bool = True
     ) -> None:
-        """Register an entity with the Home Assistant websocket to be notified when the entity is updated."""
+        """Register an entity with the Home Assistant websocket to be notified when the entity is updated.
+
+        If use_cache is False, the entity's current state is requested from Home Assistant asynchronously and
+        action_entity_updated is called once the cached state has been updated."""
         if not entity_id:
             return
 
@@ -333,21 +371,19 @@ class HomeAssistantBackend:
             # entity doesn't exist (anymore)
             return
 
-        if action_entity_updated in entity_settings.get(backend_const.ACTIONS, set()):
-            # action already registered
-            return
+        if action_entity_updated not in entity_settings.get(backend_const.ACTIONS, set()):
+            entity_settings.get(backend_const.ACTIONS).add(action_entity_updated)
 
-        entity_settings.get(backend_const.ACTIONS).add(action_entity_updated)
+            if entity_settings.get(backend_const.SUBSCRIPTION_ID) <= -1:
+                message = self._websocket.create_message(backend_const.SUBSCRIBE_TRIGGER)
+                message[backend_const.TRIGGER] = {backend_const.PLATFORM: backend_const.STATE,
+                                                  backend_const.ENTITY_ID: entity_id}
+                self._websocket.send(message)
+                entity_settings[backend_const.SUBSCRIPTION_ID] = message[backend_const.ID]
 
-        if entity_settings.get(backend_const.SUBSCRIPTION_ID) > -1:
-            # already subscribed to entity events
-            return
-
-        message = self._websocket.create_message(backend_const.SUBSCRIBE_TRIGGER)
-        message[backend_const.TRIGGER] = {backend_const.PLATFORM: backend_const.STATE,
-                                          backend_const.ENTITY_ID: entity_id}
-        self._websocket.send(message)
-        entity_settings[backend_const.SUBSCRIPTION_ID] = message[backend_const.ID]
+        if not use_cache:
+            # request after subscribing so no state change is missed in between
+            self._refresh_entity(entity_id, action_entity_updated)
 
     def remove_tracked_entity(self, entity_id: str, action_entity_updated: Callable) -> None:
         """Deregister a previously registered entity."""

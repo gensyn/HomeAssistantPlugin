@@ -89,6 +89,10 @@ class ConditionRow:
         window.select_item(self.logic, condition.logic)
         window.select_item(self.entity, condition.entity or customization_const.EMPTY_STRING)
         self.refresh_attributes(condition.attribute)
+        model = self.attribute.get_model()
+        if not any(item.get_string() == condition.attribute for item in model):
+            model.append(StringObject.new(condition.attribute))
+            self.attribute.set_selected(model.get_n_items() - 1)
         window.select_item(self.operator, condition.operator)
         self.entry_value.set_text(condition.value)
 
@@ -174,7 +178,7 @@ class CustomizationWindow(Window):
         self.index: int = index
         self.attributes: list[str] = attributes
         self.current: Customization = current
-        self.entities: list[str] = entities or []
+        self.entities: list[str] = sorted(set(entities or []) | (current.get_entities() if current else set()))
         self.get_attributes: Callable[[str], list[str]] = get_attributes
         self.condition_rows: list[ConditionRow] = []
 

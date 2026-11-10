@@ -13,8 +13,9 @@ from HomeAssistantPlugin.backend import backend_const
 class TestBackendGetActions(unittest.TestCase):
 
     @patch.object(HomeAssistantBackend, 'connect')
+    @patch.object(HomeAssistantBackend, 'is_connected', return_value=True)
     @patch.object(HomeAssistantBackend, '_load_actions')
-    def test_get_actions_no_actions(self, load_actions_mock, _):
+    def test_get_actions_no_actions(self, load_actions_mock, _, __):
         instance = HomeAssistantBackend(backend_const.EMPTY_STRING, backend_const.EMPTY_STRING, True, True, backend_const.EMPTY_STRING)
 
         load_actions_mock.side_effect = lambda: setattr(instance, '_actions', {})
@@ -24,8 +25,9 @@ class TestBackendGetActions(unittest.TestCase):
         self.assertEqual({}, instance._actions)
 
     @patch.object(HomeAssistantBackend, 'connect')
+    @patch.object(HomeAssistantBackend, 'is_connected', return_value=True)
     @patch.object(HomeAssistantBackend, '_load_actions')
-    def test_get_actions_success(self, load_actions_mock, _):
+    def test_get_actions_success(self, load_actions_mock, _, __):
         light = {
             "turn_on": {
                 "fields": {
@@ -55,4 +57,3 @@ class TestBackendGetActions(unittest.TestCase):
         self.assertEqual(light, result)
         result = instance.get_actions("switch")
         self.assertEqual(switch, result)
-
