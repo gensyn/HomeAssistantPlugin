@@ -332,6 +332,9 @@ class HomeAssistantBackend:
                 entity_settings[backend_const.ATTRIBUTES] = entity.get(backend_const.ATTRIBUTES, {})
                 return
 
+        entity_settings[backend_const.STATE] = backend_const.NA
+        entity_settings[backend_const.ATTRIBUTES] = {}
+
     def add_tracked_entity(
             self, entity_id: str, action_entity_updated: Callable, use_cache: bool = True
     ) -> None:
