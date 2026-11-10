@@ -339,7 +339,13 @@ class HomeAssistantBackend:
 
             entity_settings[backend_const.STATE] = state
             entity_settings[backend_const.ATTRIBUTES] = attributes
-            GLib.idle_add(action_entity_updated)
+            def notify_if_tracked():
+                current_settings = self._entities.get(domain, {}).get(entity_id, {})
+                if action_entity_updated in current_settings.get(backend_const.ACTIONS, set()):
+                    action_entity_updated()
+                return False
+
+            GLib.idle_add(notify_if_tracked)
 
         self._websocket.send_request(backend_const.GET_STATES, on_response)
 
