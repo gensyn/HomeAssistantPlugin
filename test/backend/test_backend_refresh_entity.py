@@ -28,6 +28,7 @@ class TestBackendRefreshEntity(unittest.TestCase):
         instance = self._create()
         callback = Mock()
 
+        instance._entities["light"]["light.a"][backend_const.ACTIONS].add(callback)
         instance._refresh_entity("light.a", callback)
         on_response = instance._websocket.send_request.call_args[0][1]
         on_response(True, [{backend_const.ENTITY_ID: "light.a", backend_const.STATE: "on",
@@ -36,7 +37,10 @@ class TestBackendRefreshEntity(unittest.TestCase):
         entity = instance._entities["light"]["light.a"]
         self.assertEqual("on", entity[backend_const.STATE])
         self.assertEqual({"new": 2}, entity[backend_const.ATTRIBUTES])
+        callback.assert_not_called()
         glib_mock.idle_add.assert_called_once()
+        self.assertFalse(glib_mock.idle_add.call_args[0][0]())
+        callback.assert_called_once_with()
 
     @patch("HomeAssistantPlugin.backend.home_assistant_backend.GLib")
     def test_refresh_entity_missing_clears_cache(self, glib_mock):
