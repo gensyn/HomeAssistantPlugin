@@ -2,6 +2,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from queue import Queue
 from unittest.mock import patch, Mock
 
 absolute_plugin_path = str(Path(__file__).parent.parent.parent.parent.absolute())
@@ -55,3 +56,17 @@ class TestWebsocketSendRequest(unittest.TestCase):
         instance._on_close(None, None, None)
 
         self.assertEqual({}, instance._pending_requests)
+
+    def test_send_and_recv_callback_runs_before_next_event(self):
+        order = []
+        instance = self._create()
+        instance._on_event_message = lambda _: order.append("event")
+        instance._pending[1] = Queue()
+        instance._pending_callbacks[1] = lambda *_: order.append("snapshot")
+
+        instance._on_message(None, json.dumps(
+            {backend_const.ID: 1, backend_const.FIELD_TYPE: backend_const.FIELD_RESULT,
+             backend_const.FIELD_SUCCESS: True, backend_const.FIELD_RESULT: []}))
+        instance._on_message(None, json.dumps({backend_const.FIELD_TYPE: backend_const.FIELD_EVENT}))
+
+        self.assertEqual(["snapshot", "event"], order)

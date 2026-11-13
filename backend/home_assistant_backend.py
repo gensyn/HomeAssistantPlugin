@@ -223,13 +223,13 @@ class HomeAssistantBackend:
         if not self.is_connected():
             return
 
-        success, result, error = self._websocket.send_and_recv(backend_const.GET_STATES)
+        def apply_states(success: bool, result: Any, error: Any) -> None:
+            if not success:
+                log.error(backend_const.ERROR_STATES.format(error))
+                return
+            self._apply_entities(result)
 
-        if not success:
-            log.error(backend_const.ERROR_STATES.format(error))
-            return
-
-        self._apply_entities(result)
+        self._websocket.send_and_recv(backend_const.GET_STATES, on_response=apply_states)
 
     def _apply_entities(self, states: list[dict]) -> None:
         entities: dict[str, dict[str, Any]] = {}

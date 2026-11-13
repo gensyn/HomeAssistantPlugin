@@ -25,7 +25,9 @@ class TestBackendLoadEntities(unittest.TestCase):
         instance._websocket = websocket_mock
         instance._load_entities()
 
-        send_and_recv_mock.assert_called_once_with(backend_const.GET_STATES)
+        send_and_recv_mock.assert_called_once()
+        self.assertEqual(backend_const.GET_STATES, send_and_recv_mock.call_args.args[0])
+        send_and_recv_mock.call_args.kwargs["on_response"](False, {}, "test_error")
         log_mock.assert_called_once_with(backend_const.ERROR_STATES.format("test_error"))
         self.assertEqual({}, instance._entities)
 
@@ -51,12 +53,13 @@ class TestBackendLoadEntities(unittest.TestCase):
         instance._entities = existing_entities
         instance._websocket = websocket_mock
         instance._load_entities()
+        send_and_recv_mock.call_args.kwargs["on_response"](True, updated_entities, backend_const.EMPTY_STRING)
 
         expected_entities = {
             "light": {"light.living_room": {backend_const.STATE: backend_const.OFF, backend_const.ATTRIBUTES: {"friendly_name": "Living Room Light"}, backend_const.ACTIONS: {"123"}, backend_const.SUBSCRIPTION_ID: 2}},
             "sensor": {"sensor.humidity": {backend_const.STATE: "45", backend_const.ATTRIBUTES: {"unit_of_measurement": "%", "friendly_name": "Humidity Sensor"}, backend_const.ACTIONS: set(), backend_const.SUBSCRIPTION_ID: -1}}
         }
 
-        send_and_recv_mock.assert_called_once_with(backend_const.GET_STATES)
+        send_and_recv_mock.assert_called_once()
+        self.assertEqual(backend_const.GET_STATES, send_and_recv_mock.call_args.args[0])
         self.assertEqual(expected_entities, instance._entities)
-

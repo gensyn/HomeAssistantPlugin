@@ -41,6 +41,7 @@ class HomeAssistantWebsocket(WebSocketApp):
         self._ws_thread: Thread | None = None
         self._pending_requests: dict[int, Callable] = {}
         self._pending: dict[int, Queue] = {}
+        self._pending_callbacks: dict[int, Callable] = {}
 
     def run_forever(self) -> None:
         """Start the WebSocketApp."""
@@ -87,7 +88,16 @@ class HomeAssistantWebsocket(WebSocketApp):
 
         pending = self._pending.get(message_dict.get(backend_const.ID))
         if pending is not None and backend_const.FIELD_RESULT == message_type:
-            pending.put(message)
+            on_response = self._pending_callbacks.pop(message_dict.get(backend_const.ID), None)
+            try:
+                if on_response is not None:
+                    on_response(
+                        message_dict.get(backend_const.FIELD_SUCCESS, False),
+                        message_dict.get(backend_const.FIELD_RESULT, backend_const.EMPTY_STRING),
+                        message_dict.get(backend_const.FIELD_ERROR, backend_const.EMPTY_STRING),
+                    )
+            finally:
+                pending.put(message)
             return
 
         if backend_const.FIELD_EVENT == message_type:
@@ -116,7 +126,7 @@ class HomeAssistantWebsocket(WebSocketApp):
         super().send(json.dumps(message))
 
     def send_and_recv(
-            self, message: str, check_connected: bool = True
+            self, message: str, check_connected: bool = True, on_response: Callable | None = None
     ) -> tuple[bool, Any, Any]:
         """Send a websocket message to Home Assistant and return the response."""
         if check_connected and not self.connected:
@@ -131,6 +141,8 @@ class HomeAssistantWebsocket(WebSocketApp):
             message_id = message_dict[backend_const.ID]
             queue: Queue = Queue()
             self._pending[message_id] = queue
+            if on_response is not None:
+                self._pending_callbacks[message_id] = on_response
             try:
                 self.send(message_dict, check_connected)
                 response = queue.get(timeout=RESPONSE_TIMEOUT)
@@ -138,6 +150,13 @@ class HomeAssistantWebsocket(WebSocketApp):
                 return False, backend_const.EMPTY_STRING, backend_const.EMPTY_STRING
             finally:
                 self._pending.pop(message_id, None)
+                self._pending_callbacks.pop(message_id, None)
+        if on_response is not None and (self._ws_thread is None or current_thread() is self._ws_thread):
+            on_response(
+                _get_field_from_message(response, backend_const.FIELD_SUCCESS),
+                _get_field_from_message(response, backend_const.FIELD_RESULT),
+                _get_field_from_message(response, backend_const.FIELD_ERROR),
+            )
         success = _get_field_from_message(response, backend_const.FIELD_SUCCESS)
         result = _get_field_from_message(response, backend_const.FIELD_RESULT)
         error = _get_field_from_message(response, backend_const.FIELD_ERROR)
