@@ -41,6 +41,7 @@ class ShowText(CustomizationCore):
 
     def get_config_rows(self) -> list:
         """Get the rows to be displayed in the UI."""
+        self.refresh_lists()
         return [self.domain_combo.widget, self.entity_combo.widget, self.position.widget, self.attribute.widget,
                 self.round.widget, self.text_size.widget, self.text_color.widget,
                 self.outline_size.widget, self.outline_color.widget, self.show_unit.widget, self.unit_line_break.widget,
@@ -286,4 +287,4 @@ class ShowText(CustomizationCore):
 
     def _get_domains(self) -> list[str]:
         """This class needs all domains that provide actions in Home Assistant."""
-        return self.plugin_base.backend.get_domains_for_entities()
+        return self.plugin_base.backend.get_domains_for_entities(load_if_empty=False)

@@ -22,7 +22,7 @@ def load_parameters(action):
         return
 
     fields = action.plugin_base.backend.get_actions(
-        str(action.domain_combo.get_selected_item())).get(
+        str(action.domain_combo.get_selected_item()), load_if_empty=False).get(
         ha_action, {}).get(perform_const.ATTRIBUTE_FIELDS, {})
 
     fields.update(fields.get(perform_const.ADVANCED_FIELDS, {}).get(perform_const.ATTRIBUTE_FIELDS, {}))
