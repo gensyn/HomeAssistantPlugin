@@ -38,7 +38,7 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
 
         settings_mock.get_action.assert_called_once()
         settings_mock.get_domain.assert_called_once()
-        plugin_base_mock.backend.get_actions.assert_called_once_with('test_domain')
+        plugin_base_mock.backend.get_actions.assert_called_once_with('test_domain', load_if_empty=False)
         action_combo_mock.populate.assert_called_once_with(
             ['test_action', 'another_action'],
             'test_action',
@@ -71,7 +71,7 @@ class TestPerformActionOnChangeAction(unittest.TestCase):
 
         settings_mock.get_action.assert_called_once()
         settings_mock.get_domain.assert_called_once()
-        plugin_base_mock.backend.get_actions.assert_called_once_with('test_domain')
+        plugin_base_mock.backend.get_actions.assert_called_once_with('test_domain', load_if_empty=False)
         action_combo_mock.populate.assert_called_once_with(
             ['one_action', 'another_action', 'test_action'],
             'test_action',

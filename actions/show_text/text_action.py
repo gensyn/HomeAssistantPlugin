@@ -287,4 +287,4 @@ class ShowText(CustomizationCore):
 
     def _get_domains(self) -> list[str]:
         """This class needs all domains that provide actions in Home Assistant."""
-        return self.plugin_base.backend.get_domains_for_entities()
+        return self.plugin_base.backend.get_domains_for_entities(load_if_empty=False)

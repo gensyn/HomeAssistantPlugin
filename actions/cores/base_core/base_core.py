@@ -69,6 +69,7 @@ class BaseCore(ActionCore):
         self.entity_combo = None
         self._last_loaded_domains: list | None = None
         self._last_loaded_entities: list | None = None
+        self._refresh_cancelled = False
         self.create_ui_elements()
         self._create_event_assigner()
 
@@ -115,6 +116,7 @@ class BaseCore(ActionCore):
     @requires_initialization
     def on_remove(self) -> None:
         """Clean up after action was removed."""
+        self._refresh_cancelled = True
         self.plugin_base.backend.remove_action_ready_callback(self.on_ready)
 
         if self.track_entity:
@@ -133,7 +135,12 @@ class BaseCore(ActionCore):
         """Refresh the domain and entity lists, e.g. when the action is opened for editing."""
         if not self.plugin_base.backend.is_connected():
             return
-        self.plugin_base.backend.reload_entities()
+        self.plugin_base.backend.reload_entities(self._on_entities_refreshed)
+
+    def _on_entities_refreshed(self) -> None:
+        if (getattr(self, "_refresh_cancelled", False) or getattr(self, "is_removed", False)
+                or not self.plugin_base.backend.is_connected()):
+            return
         self._load_domains()
         self._load_entities()
 
@@ -238,7 +245,7 @@ class BaseCore(ActionCore):
     def _load_entities(self) -> None:
         """Load entities from Home Assistant."""
         entity = self.settings.get_entity()
-        entities = self.plugin_base.backend.get_entities(self.settings.get_domain())
+        entities = self.plugin_base.backend.get_entities(self.settings.get_domain(), load_if_empty=False)
         if not entities and not self.plugin_base.backend.is_connected():
             # Nothing to populate from - keep whatever is currently stored and shown
             return

@@ -41,8 +41,22 @@ class PerformAction(BaseCore):
         """Refresh domains, entities, actions and their parameters."""
         if not self.plugin_base.backend.is_connected():
             return
-        self.plugin_base.backend.reload_actions()
+        self.plugin_base.backend.reload_actions(self._on_actions_refreshed)
         super().refresh_lists()
+
+    def _on_actions_refreshed(self) -> None:
+        if (getattr(self, "_refresh_cancelled", False) or getattr(self, "is_removed", False)
+                or not self.plugin_base.backend.is_connected()):
+            return
+        self._load_domains()
+        self._load_actions()
+        self._reload()
+
+    def _on_entities_refreshed(self) -> None:
+        if (getattr(self, "_refresh_cancelled", False) or getattr(self, "is_removed", False)
+                or not self.plugin_base.backend.is_connected()):
+            return
+        super()._on_entities_refreshed()
         self._load_actions()
         self._reload()
 
@@ -145,7 +159,7 @@ class PerformAction(BaseCore):
         Load actions from Home Assistant.
         """
         action = self.settings.get_action()
-        actions_dict = self.plugin_base.backend.get_actions(self.settings.get_domain())
+        actions_dict = self.plugin_base.backend.get_actions(self.settings.get_domain(), load_if_empty=False)
         actions = list(actions_dict.keys())
         if not actions and not self.plugin_base.backend.is_connected():
             # Nothing to populate from - keep whatever is currently stored and shown
@@ -188,11 +202,11 @@ class PerformAction(BaseCore):
                 self.parameters_expander.widget.set_subtitle(perform_const.EMPTY_STRING)
 
             action = self.settings.get_action()
-            actions = self.plugin_base.backend.get_actions(self.settings.get_domain())
+            actions = self.plugin_base.backend.get_actions(self.settings.get_domain(), load_if_empty=False)
             has_target = bool(actions.get(action, {}).get(perform_const.TARGET))
             self.entity_combo.widget.set_sensitive(has_target)
 
     @requires_initialization
     def _get_domains(self) -> list[str]:
         """This class needs all domains that provide actions in Home Assistant."""
-        return self.plugin_base.backend.get_domains_for_actions()
+        return self.plugin_base.backend.get_domains_for_actions(load_if_empty=False)

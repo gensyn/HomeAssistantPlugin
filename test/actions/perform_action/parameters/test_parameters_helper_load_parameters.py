@@ -102,7 +102,7 @@ class TestParametersHelperLoadParameters(unittest.TestCase):
         action.settings.get_entity.assert_called_once()
         action.plugin_base.backend.get_entity.assert_called_once_with(entity_id)
         action.settings.get_action.assert_called_once()
-        action.plugin_base.backend.get_actions.assert_called_once_with(domain)
+        action.plugin_base.backend.get_actions.assert_called_once_with(domain, load_if_empty=False)
         action.parameters_expander.add_row.assert_not_called()
 
     def test_load_parameters_no_selector(self):
@@ -141,7 +141,7 @@ class TestParametersHelperLoadParameters(unittest.TestCase):
         action.settings.get_entity.assert_called_once()
         action.plugin_base.backend.get_entity.assert_called_once_with(entity_id)
         action.settings.get_action.assert_called_once()
-        action.plugin_base.backend.get_actions.assert_called_once_with(domain)
+        action.plugin_base.backend.get_actions.assert_called_once_with(domain, load_if_empty=False)
         action.parameters_expander.add_row.assert_not_called()
 
     @patch('HomeAssistantPlugin.actions.perform_action.parameters.parameters_helper.ParameterComboRow')
@@ -206,7 +206,7 @@ class TestParametersHelperLoadParameters(unittest.TestCase):
         action.settings.get_entity.assert_called_once()
         action.plugin_base.backend.get_entity.assert_called_once_with(entity_id)
         action.settings.get_action.assert_called_once()
-        action.plugin_base.backend.get_actions.assert_called_once_with(domain)
+        action.plugin_base.backend.get_actions.assert_called_once_with(domain, load_if_empty=False)
         action.parameters_expander.add_row.assert_called_once_with(parameter_combo_row_mock.widget)
         parameter_combo_row_mock.assert_called_once_with(action, f"{perform_const.SETTING_SERVICE}.{perform_const.ACTION_PARAMETERS}.brightness", "Brightness", "75%", ["25%", "50%", "75%", "100%"], True)
         assert "color_temp" in fields
@@ -269,7 +269,7 @@ class TestParametersHelperLoadParameters(unittest.TestCase):
         action.settings.get_entity.assert_called_once()
         action.plugin_base.backend.get_entity.assert_called_once_with(entity_id)
         action.settings.get_action.assert_called_once()
-        action.plugin_base.backend.get_actions.assert_called_once_with(domain)
+        action.plugin_base.backend.get_actions.assert_called_once_with(domain, load_if_empty=False)
         action.parameters_expander.add_row.assert_called_once_with(parameter_combo_row_mock.widget)
         parameter_combo_row_mock.assert_called_once_with(action, f"{perform_const.SETTING_SERVICE}.{perform_const.ACTION_PARAMETERS}.brightness", "brightness", perform_const.EMPTY_STRING, ["25%", "50%", "75%", "100%"], False)
 
@@ -325,7 +325,7 @@ class TestParametersHelperLoadParameters(unittest.TestCase):
         action.settings.get_entity.assert_called_once()
         action.plugin_base.backend.get_entity.assert_called_once_with(entity_id)
         action.settings.get_action.assert_called_once()
-        action.plugin_base.backend.get_actions.assert_called_once_with(domain)
+        action.plugin_base.backend.get_actions.assert_called_once_with(domain, load_if_empty=False)
         action.parameters_expander.add_row.assert_called_once_with(parameter_switch_row_mock.widget)
         parameter_switch_row_mock.assert_called_once_with(action, f"{perform_const.SETTING_SERVICE}.{perform_const.ACTION_PARAMETERS}.brightness", "Brightness", True, True)
 
@@ -382,7 +382,7 @@ class TestParametersHelperLoadParameters(unittest.TestCase):
         action.settings.get_entity.assert_called_once()
         action.plugin_base.backend.get_entity.assert_called_once_with(entity_id)
         action.settings.get_action.assert_called_once()
-        action.plugin_base.backend.get_actions.assert_called_once_with(domain)
+        action.plugin_base.backend.get_actions.assert_called_once_with(domain, load_if_empty=False)
         action.parameters_expander.add_row.assert_called_once_with(parameter_switch_row_mock.widget)
         parameter_switch_row_mock.assert_called_once_with(action, f"{perform_const.SETTING_SERVICE}.{perform_const.ACTION_PARAMETERS}.brightness", "Brightness", True, True)
 
@@ -442,7 +442,7 @@ class TestParametersHelperLoadParameters(unittest.TestCase):
         action.settings.get_entity.assert_called_once()
         action.plugin_base.backend.get_entity.assert_called_once_with(entity_id)
         action.settings.get_action.assert_called_once()
-        action.plugin_base.backend.get_actions.assert_called_once_with(domain)
+        action.plugin_base.backend.get_actions.assert_called_once_with(domain, load_if_empty=False)
         action.parameters_expander.add_row.assert_called_once_with(parameter_scale_row_mock.widget)
         parameter_scale_row_mock.assert_called_once_with(action, f"{perform_const.SETTING_SERVICE}.{perform_const.ACTION_PARAMETERS}.brightness", "Brightness", 48.5, 1, 99, 0.5, True)
 
@@ -503,7 +503,7 @@ class TestParametersHelperLoadParameters(unittest.TestCase):
         action.settings.get_entity.assert_called_once()
         action.plugin_base.backend.get_entity.assert_called_once_with(entity_id)
         action.settings.get_action.assert_called_once()
-        action.plugin_base.backend.get_actions.assert_called_once_with(domain)
+        action.plugin_base.backend.get_actions.assert_called_once_with(domain, load_if_empty=False)
         action.parameters_expander.add_row.assert_called_once_with(parameter_scale_row_mock.widget)
         parameter_scale_row_mock.assert_called_once_with(action, f"{perform_const.SETTING_SERVICE}.{perform_const.ACTION_PARAMETERS}.brightness", "Brightness", 7, 1, 99, 0.5, True)
 
@@ -559,7 +559,6 @@ class TestParametersHelperLoadParameters(unittest.TestCase):
         action.settings.get_entity.assert_called_once()
         action.plugin_base.backend.get_entity.assert_called_once_with(entity_id)
         action.settings.get_action.assert_called_once()
-        action.plugin_base.backend.get_actions.assert_called_once_with(domain)
+        action.plugin_base.backend.get_actions.assert_called_once_with(domain, load_if_empty=False)
         action.parameters_expander.add_row.assert_called_once_with(parameter_entry_row_mock.widget)
         parameter_entry_row_mock.assert_called_once_with(action, f"{perform_const.SETTING_SERVICE}.{perform_const.ACTION_PARAMETERS}.brightness", "Brightness", "some text", False)
-

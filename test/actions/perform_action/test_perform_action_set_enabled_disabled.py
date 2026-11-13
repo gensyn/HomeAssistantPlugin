@@ -151,7 +151,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
             locale_manager[perform_const.LABEL_SERVICE_NO_PARAMETERS])
         settings_mock.get_action.assert_called_once()
         domain_combo_mock.get_selected_item.assert_not_called()
-        plugin_base_mock.backend.get_actions.assert_called_once_with("light")
+        plugin_base_mock.backend.get_actions.assert_called_once_with("light", load_if_empty=False)
         entity_combo_mock.widget.set_sensitive.assert_called_once_with(False)
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
@@ -203,7 +203,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         parameters_expander_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         settings_mock.get_action.assert_called_once()
         domain_combo_mock.get_selected_item.assert_not_called()
-        plugin_base_mock.backend.get_actions.assert_called_once_with("light")
+        plugin_base_mock.backend.get_actions.assert_called_once_with("light", load_if_empty=False)
         entity_combo_mock.widget.set_sensitive.assert_called_once_with(False)
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
@@ -255,7 +255,7 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         parameters_expander_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         settings_mock.get_action.assert_called_once()
         domain_combo_mock.get_selected_item.assert_not_called()
-        plugin_base_mock.backend.get_actions.assert_called_once_with("light")
+        plugin_base_mock.backend.get_actions.assert_called_once_with("light", load_if_empty=False)
         entity_combo_mock.widget.set_sensitive.assert_called_once_with(True)
 
     @patch('HomeAssistantPlugin.actions.perform_action.perform_action.BaseCore.__init__')
@@ -307,5 +307,5 @@ class TestPerformActionSetEnabledDisabled(unittest.TestCase):
         parameters_expander_mock.widget.set_subtitle.assert_called_once_with(perform_const.EMPTY_STRING)
         settings_mock.get_action.assert_called_once()
         domain_combo_mock.get_selected_item.assert_not_called()
-        plugin_base_mock.backend.get_actions.assert_called_once_with("light")
+        plugin_base_mock.backend.get_actions.assert_called_once_with("light", load_if_empty=False)
         entity_combo_mock.widget.set_sensitive.assert_called_once_with(True)

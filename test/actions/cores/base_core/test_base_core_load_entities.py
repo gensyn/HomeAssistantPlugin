@@ -42,7 +42,7 @@ class TestBaseCoreLoadEntities(unittest.TestCase):
 
         settings_mock.get_entity.assert_called_once()
         settings_mock.get_domain.assert_called_once()
-        instance.plugin_base.backend.get_entities.assert_called_once_with(domain)
+        instance.plugin_base.backend.get_entities.assert_called_once_with(domain, load_if_empty=False)
         entity_combo_mock.populate.assert_called_once_with(entities_sorted, entity, trigger_callback=False)
 
     @patch.object(BaseCore, "create_ui_elements")
@@ -72,7 +72,7 @@ class TestBaseCoreLoadEntities(unittest.TestCase):
 
         settings_mock.get_entity.assert_called_once()
         settings_mock.get_domain.assert_called_once()
-        instance.plugin_base.backend.get_entities.assert_called_once_with(domain)
+        instance.plugin_base.backend.get_entities.assert_called_once_with(domain, load_if_empty=False)
         entity_combo_mock.populate.assert_called_once_with(entities_sorted, entity, trigger_callback=False)
 
 

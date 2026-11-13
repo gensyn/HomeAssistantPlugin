@@ -21,6 +21,9 @@ class HomeAssistantBackend:
         self._websocket: Optional[HomeAssistantWebsocket] = None
         self._entities: dict[str, dict[str, Any]] = {}
         self._actions: dict[str, dict[str, Any]] = {}
+        self._refresh_sequence = 0
+        self._entities_refresh_applied = 0
+        self._actions_refresh_applied = 0
         self._connection_status_callback: Callable = lambda _1, _2=None: None
         self._keep_alive_thread: Optional[Thread] = None
         self._retry_connect_thread: Optional[Thread] = None
@@ -182,20 +185,20 @@ class HomeAssistantBackend:
             # the websocket instance is still the same, so we can try to reconnect
             self.connect()
 
-    def get_domains_for_entities(self) -> list[str]:
+    def get_domains_for_entities(self, load_if_empty: bool = True) -> list[str]:
         """Get a list of all domains known to Home Assistant."""
         if self._entities:
             return list(self._entities.keys())
-        if not self.is_connected():
+        if not load_if_empty or not self.is_connected():
             return []
         self._load_entities()
         return list(self._entities.keys())
 
-    def get_domains_for_actions(self) -> list[str]:
+    def get_domains_for_actions(self, load_if_empty: bool = True) -> list[str]:
         """Get a list of all domains known to Home Assistant."""
         if self._actions:
             return list(self._actions.keys())
-        if not self.is_connected():
+        if not load_if_empty or not self.is_connected():
             return []
         self._load_actions()
         return list(self._actions.keys())
@@ -226,8 +229,9 @@ class HomeAssistantBackend:
             log.error(backend_const.ERROR_STATES.format(error))
             return
 
-        states: list[dict] = result
+        self._apply_entities(result)
 
+    def _apply_entities(self, states: list[dict]) -> None:
         entities: dict[str, dict[str, Any]] = {}
 
         for entity in states:
@@ -254,23 +258,55 @@ class HomeAssistantBackend:
 
         self._entities = entities
 
-    def reload_entities(self) -> None:
-        """Reload the entities from Home Assistant to pick up newly added ones."""
-        if self.is_connected():
-            self._load_entities()
+    def _request_refresh(self, message_type: str, apply_result: Callable, applied_attr: str,
+                         error_message: str, on_complete: Callable | None) -> None:
+        if not self.is_connected():
+            return
+        websocket = self._websocket
+        self._refresh_sequence += 1
+        sequence = self._refresh_sequence
 
-    def reload_actions(self) -> None:
-        """Reload the actions from Home Assistant to pick up newly added ones."""
-        if self.is_connected():
-            self._load_actions()
+        def on_response(success: bool, result: Any, error: Any) -> None:
+            if self._websocket is not websocket or not websocket.connected:
+                return
+            if not success:
+                log.error(error_message.format(error))
+                return
 
-    def get_entities(self, domain: str) -> list[str]:
+            # Apply in receive order, before later websocket state-change events can arrive.
+            if sequence > getattr(self, applied_attr):
+                apply_result(result)
+                setattr(self, applied_attr, sequence)
+
+            def apply_on_main_thread() -> bool:
+                if self._websocket is not websocket or not websocket.connected:
+                    return False
+                if on_complete is not None:
+                    on_complete()
+                return False
+
+            GLib.idle_add(apply_on_main_thread)
+
+        if not websocket.send_request(message_type, on_response):
+            log.warning("Could not request Home Assistant refresh: websocket is disconnected")
+
+    def reload_entities(self, on_complete: Callable | None = None) -> None:
+        """Request fresh entities without blocking the caller."""
+        self._request_refresh(backend_const.GET_STATES, self._apply_entities,
+                              "_entities_refresh_applied", backend_const.ERROR_STATES, on_complete)
+
+    def reload_actions(self, on_complete: Callable | None = None) -> None:
+        """Request fresh services without blocking the caller."""
+        self._request_refresh(backend_const.GET_SERVICES, self._apply_actions,
+                              "_actions_refresh_applied", backend_const.ERROR_SERVICES, on_complete)
+
+    def get_entities(self, domain: str, load_if_empty: bool = True) -> list[str]:
         """Return a list of all entities known to Home Assistant."""
         if not domain:
             return []
         if self._entities:
             return list(self._entities.get(domain, {}).keys())
-        if not self.is_connected():
+        if not load_if_empty or not self.is_connected():
             return []
         self._load_entities()
         return list(self._entities.get(domain, {}).keys())
@@ -288,12 +324,15 @@ class HomeAssistantBackend:
 
         self._actions = result
 
-    def get_actions(self, domain: str) -> dict[str, dict[str, Any]]:
+    def _apply_actions(self, actions: dict[str, dict[str, Any]]) -> None:
+        self._actions = actions
+
+    def get_actions(self, domain: str, load_if_empty: bool = True) -> dict[str, dict[str, Any]]:
         """Return all actions known to Home Assistant for the domain."""
         if not domain:
             return {}
         if not self._actions:
-            if not self.is_connected():
+            if not load_if_empty or not self.is_connected():
                 return {}
             self._load_actions()
         if not self._actions:
