@@ -1,4 +1,4 @@
-<div align="center">
+<div style="text-align: center;">
 
 # 🏠 Home Assistant Plugin
 
@@ -104,7 +104,7 @@
 3. Find **Home Assistant** in the list
 4. Click **Open Settings**
 
-<div align="center">
+<div style="text-align: center;">
 
 ![Plugin settings](assets/connection_settings.png)
 
@@ -123,7 +123,7 @@
 
 Execute Home Assistant actions directly from your StreamDeck.
 
-<div align="center">
+<div style="text-align: center;">
 
 ![Action settings service](assets/perform_action.png)
 
@@ -142,7 +142,7 @@ Execute Home Assistant actions directly from your StreamDeck.
 
 Display dynamic icons based on Home Assistant entity data.
 
-<div align="center">
+<div style="text-align: center;">
 
 ![Action settings icon](assets/show_icon.png)
 
@@ -166,7 +166,7 @@ Create conditional icon appearances based on entity states.
 
 > **Conditions on other entities**: By default a condition checks the entity selected for the action. Choose a different **Entity** to check the state or an attribute of any Home Assistant entity instead; the action is updated whenever that entity changes. Use **Add condition** to combine several conditions with **and** / **or** (**and** is evaluated before **or**). This works the same way for icon, text, and level dial customizations.
 
-<div align="center">
+<div style="text-align: center;">
 
 ![Icon customization dialog](assets/show_icon_customize.png)
 
@@ -174,7 +174,7 @@ Create conditional icon appearances based on entity states.
 
 **Managing Customizations:**
 
-<div align="center">
+<div style="text-align: center;">
 
 ![Icon customizations list](assets/show_icon_customizations.png)
 
@@ -193,7 +193,7 @@ Create conditional icon appearances based on entity states.
 
 Display dynamic text based on Home Assistant entity data.
 
-<div align="center">
+<div style="text-align: center;">
 
 ![Action settings text](assets/show_text.png)
 
@@ -224,7 +224,9 @@ Create conditional text appearances based on entity states.
 2. Define a condition (state or attribute value)
 3. Configure text changes when the condition is met
 
-<div align="center">
+> **Conditions on other entities**: By default a condition checks the entity selected for the action. Choose a different **Entity** to check the state or an attribute of any Home Assistant entity instead; the action is updated whenever that entity changes. Use **Add condition** to combine several conditions with **and** / **or** (**and** is evaluated before **or**). This works the same way for icon, text, and level dial customizations.
+
+<div style="text-align: center;">
 
 ![Text customization dialog](assets/show_text_customize.png)
 
@@ -232,13 +234,13 @@ Create conditional text appearances based on entity states.
 
 **Managing Customizations:**
 
-<div align="center">
+<div style="text-align: center;">
 
 ![Text customizations list](assets/show_text_customizations.png)
 
 </div>
 
-> **Cascading Behavior**: Like icon customizations, text customizations are evaluated in order. The last matching customization sets the final value. In the example above, only the second customization matches, setting text size to 12.
+> **Cascading Behavior**: Like icon customizations, text customizations are evaluated in order. The last matching customization sets the final value. In the example above, only the third customization matches, setting text size to 12.
 
 **Advanced Features:**
 
@@ -295,6 +297,8 @@ Create conditional icon and color appearances based on entity states.
 2. Define a condition (state or attribute value)
 3. Configure icon and/or color changes when the condition is met
 
+> **Conditions on other entities**: By default a condition checks the entity selected for the action. Choose a different **Entity** to check the state or an attribute of any Home Assistant entity instead; the action is updated whenever that entity changes. Use **Add condition** to combine several conditions with **and** / **or** (**and** is evaluated before **or**). This works the same way for icon, text, and level dial customizations.
+
 **Features:**
 - ✏️ Edit, delete, and reorder customizations
 - 👁️ View current entity value for reference
@@ -308,7 +312,7 @@ Create conditional icon and color appearances based on entity states.
 
 ### 🌤️ Weather Display
 
-<div align="center">
+<div style="text-align: center;">
 
 ![Weather button](assets/example_1.png)
 
@@ -322,7 +326,7 @@ Create conditional icon and color appearances based on entity states.
 
 ### 🔘 Toggle Button
 
-<div align="center">
+<div style="text-align: center;">
 
 ![Boolean toggle button](assets/example_2.gif)
 
@@ -338,7 +342,7 @@ Create conditional icon and color appearances based on entity states.
 
 ### 🎵 Media Player Control
 
-<div align="center">
+<div style="text-align: center;">
 
 ![Media player button](assets/example_3.gif)
 
@@ -356,7 +360,7 @@ Create conditional icon and color appearances based on entity states.
 
 ### 💨 Air Quality Monitor
 
-<div align="center">
+<div style="text-align: center;">
 
 ![Air quality button](assets/example_4.gif)
 
